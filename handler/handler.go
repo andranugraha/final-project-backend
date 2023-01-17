@@ -3,15 +3,15 @@ package handler
 import "final-project-backend/usecase"
 
 type Handler struct {
-	userUsecase         usecase.UserUsecase
+	userUsecase usecase.UserUsecase
 }
 
 type Config struct {
-	UserUsecase         usecase.UserUsecase
+	UserUsecase usecase.UserUsecase
 }
 
 func New(cfg *Config) *Handler {
 	return &Handler{
-		userUsecase:         cfg.UserUsecase,
+		userUsecase: cfg.UserUsecase,
 	}
 }

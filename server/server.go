@@ -19,7 +19,7 @@ func createRouter() *gin.Engine {
 	})
 
 	return NewRouter(&RouterConfig{
-		UserUsecase:         userUsecase,
+		UserUsecase: userUsecase,
 	})
 }
 

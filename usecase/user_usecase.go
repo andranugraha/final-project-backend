@@ -39,4 +39,3 @@ func (u *userUsecaseImpl) SignIn(req dto.SignInRequest) (*dto.SignInResponse, er
 
 	return res, nil
 }
-

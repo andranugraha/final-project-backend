@@ -8,13 +8,13 @@ import (
 )
 
 type RouterConfig struct {
-	UserUsecase         usecase.UserUsecase
+	UserUsecase usecase.UserUsecase
 }
 
 func NewRouter(cfg *RouterConfig) *gin.Engine {
 	router := gin.Default()
 	h := handler.New(&handler.Config{
-		UserUsecase:         cfg.UserUsecase,
+		UserUsecase: cfg.UserUsecase,
 	})
 
 	router.Static("/docs", "swagger-ui")
