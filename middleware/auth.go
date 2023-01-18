@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"final-project-backend/config"
-	"final-project-backend/utils"
+	errResp "final-project-backend/utils/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -17,7 +17,7 @@ func Authenticated(c *gin.Context) {
 	tokenString, err := getJwtToken(c.GetHeader("Authorization"))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code":    utils.ErrCodeUnauthorized,
+			"code":    errResp.ErrCodeUnauthorized,
 			"message": err.Error(),
 		})
 		return
@@ -32,40 +32,44 @@ func Authenticated(c *gin.Context) {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"code":    utils.ErrCodeUnauthorized,
+					"code":    errResp.ErrCodeUnauthorized,
 					"message": "not a token",
 				})
 				return
 			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"code":    utils.ErrCodeUnauthorized,
+					"code":    errResp.ErrCodeUnauthorized,
 					"message": "token expired or not actived yet",
 				})
 				return
 			} else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"code":    utils.ErrCodeUnauthorized,
+					"code":    errResp.ErrCodeUnauthorized,
 					"message": "couldn't handle token",
 				})
 				return
 			}
 		}
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code":    utils.ErrCodeUnauthorized,
+			"code":    errResp.ErrCodeUnauthorized,
 			"message": "couldn't handle token",
 		})
 		return
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		intId := int(claims["userId"].(float64))
+		intId := claims["userId"].(int)
 		c.Set("userId", intId)
+
+		intRoleId := claims["roleId"].(int)
+		c.Set("roleId", intRoleId)
+
 		c.Next()
 		return
 	}
 
 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-		"code":    utils.ErrCodeUnauthorized,
+		"code":    errResp.ErrCodeUnauthorized,
 		"message": "couldn't handle token",
 	})
 }

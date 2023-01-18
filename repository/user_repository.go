@@ -4,14 +4,14 @@ import (
 	"errors"
 
 	"final-project-backend/entity"
-	"final-project-backend/utils"
+	errResp "final-project-backend/utils/errors"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	GetById(int) (*entity.User, error)
-	GetByEmail(string) (*entity.User, error)
+	GetByIdentifierAndRole(string, int) (*entity.User, error)
 	Insert(entity.User) (*entity.User, error)
 }
 
@@ -32,7 +32,7 @@ func (r *userRepositoryImpl) GetById(id int) (*entity.User, error) {
 	err := r.db.First(&res, id)
 	if err.Error != nil {
 		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
-			return nil, utils.ErrUserNotFound
+			return nil, errResp.ErrUserNotFound
 		}
 		return nil, err.Error
 	}
@@ -40,12 +40,14 @@ func (r *userRepositoryImpl) GetById(id int) (*entity.User, error) {
 	return res, nil
 }
 
-func (r *userRepositoryImpl) GetByEmail(email string) (*entity.User, error) {
+func (r *userRepositoryImpl) GetByIdentifierAndRole(identifier string, roleId int) (*entity.User, error) {
 	var res *entity.User
-	err := r.db.Where("email = ?", email).First(&res)
+	err := r.db.Where(
+		r.db.Where("email = ?", identifier).Or("username = ?", identifier),
+	).Where("role_id = ?", roleId).First(&res)
 	if err.Error != nil {
 		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
-			return nil, utils.ErrUserNotFound
+			return nil, errResp.ErrUserNotFound
 		}
 		return nil, err.Error
 	}

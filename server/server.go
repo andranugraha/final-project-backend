@@ -6,6 +6,7 @@ import (
 	"final-project-backend/db"
 	"final-project-backend/repository"
 	"final-project-backend/usecase"
+	"final-project-backend/utils/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,7 @@ func createRouter() *gin.Engine {
 	})
 	userUsecase := usecase.NewUserUsecase(&usecase.UserUConfig{
 		UserRepository: userRepo,
+		BcryptUsecase: auth.AuthUtilImpl{},
 	})
 
 	return NewRouter(&RouterConfig{
