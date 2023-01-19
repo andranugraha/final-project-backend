@@ -32,5 +32,6 @@ var (
 		DBName:   getENV("DB_NAME", ""),
 		Port:     getENV("DB_PORT", "5432"),
 	}
-	Secret = getENV("SECRET", "secret")
+	Secret        = getENV("SECRET", "secret")
+	CloudinaryUrl = getENV("CLOUDINARY_URL", "cloudinary://")
 )

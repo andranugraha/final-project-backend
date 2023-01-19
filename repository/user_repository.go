@@ -6,6 +6,7 @@ import (
 	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -56,9 +57,14 @@ func (r *userRepositoryImpl) GetByIdentifierAndRole(identifier string, roleId in
 }
 
 func (r *userRepositoryImpl) Insert(req entity.User) (*entity.User, error) {
-	err := r.db.Create(&req)
-	if err.Error != nil {
-		return nil, err.Error
+	err := r.db.Create(&req).Error
+	if err != nil {
+		if pgError := err.(*pgconn.PgError); errors.Is(err, pgError) {
+			if pgError.Code == errResp.ErrSqlUniqueViolation {
+				err = errResp.ErrDuplicateRecord
+			}
+		}
+		return nil, err
 	}
 
 	return &req, nil

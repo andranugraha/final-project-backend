@@ -9,14 +9,18 @@ const (
 	ErrCodeBadRequest          = "BAD_REQUEST"
 	ErrCodeUnauthorized        = "UNAUTHORIZED"
 	ErrCodeForbidden           = "FORBIDDEN_ACCESS"
+	ErrCodeNotFound            = "NOT_FOUND"
 	ErrCodeRouteNotFound       = "ROUTE_NOT_FOUND"
 )
 
 var (
+	ErrDuplicateRecord       = errors.New("duplicate record")
+	ErrDuplicateTitle        = errors.New("duplicate title")
 	ErrInvalidBody           = errors.New("invalid body request")
 	ErrInvalidParam          = errors.New("invalid params")
 	ErrUserNotFound          = errors.New("user not found")
 	ErrRecordNotFound        = errors.New("record not found")
+	ErrCourseNotFound        = errors.New("course not found")
 	ErrWrongPassword         = errors.New("password mismatch")
 	ErrForbidden             = errors.New("forbidden access to resources")
 	ErrRouteNotFound         = errors.New("the requested route is not exist")

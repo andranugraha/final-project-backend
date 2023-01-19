@@ -5,6 +5,8 @@ import (
 	"final-project-backend/repository"
 	"final-project-backend/utils/auth"
 	"final-project-backend/utils/errors"
+	"math/rand"
+	"time"
 )
 
 type UserUsecase interface {
@@ -13,43 +15,40 @@ type UserUsecase interface {
 }
 
 type userUsecaseImpl struct {
-	userRepository repository.UserRepository
-	bcryptUsecase  auth.AuthUtil
+	userRepo      repository.UserRepository
+	bcryptUsecase auth.AuthUtil
 }
 
 type UserUConfig struct {
-	UserRepository repository.UserRepository
-	BcryptUsecase  auth.AuthUtil
+	UserRepo      repository.UserRepository
+	BcryptUsecase auth.AuthUtil
 }
 
 func NewUserUsecase(cfg *UserUConfig) UserUsecase {
 	return &userUsecaseImpl{
-		userRepository: cfg.UserRepository,
-		bcryptUsecase:  cfg.BcryptUsecase,
+		userRepo:      cfg.UserRepo,
+		bcryptUsecase: cfg.BcryptUsecase,
 	}
 }
 
-func (u *userUsecaseImpl) SignUp(req dto.SignUpRequest) (res *dto.SignUpResponse, err error) {
+func (u *userUsecaseImpl) SignUp(req dto.SignUpRequest) (*dto.SignUpResponse, error) {
 	user := req.ToUser()
 	user.Password = u.bcryptUsecase.HashAndSalt(req.Password)
+	user.Referral = u.generateReferralCode()
 
-	const userRoleId = 2
-	user.RoleId = userRoleId
-
-	const newbieLevelId = 1
-	user.LevelId = newbieLevelId
-
-	registeredUser, err := u.userRepository.Insert(user)
+	registeredUser, err := u.userRepo.Insert(user)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	res.UserToResponse(*registeredUser)
-	return
+	res := dto.SignUpResponse{}
+	res.FromUser(*registeredUser)
+
+	return &res, nil
 }
 
 func (u *userUsecaseImpl) SignIn(req dto.SignInRequest, roleId int) (*dto.SignInResponse, error) {
-	user, err := u.userRepository.GetByIdentifierAndRole(req.Identifier, roleId)
+	user, err := u.userRepo.GetByIdentifierAndRole(req.Identifier, roleId)
 	if err != nil {
 		return nil, err
 	}
@@ -61,4 +60,16 @@ func (u *userUsecaseImpl) SignIn(req dto.SignInRequest, roleId int) (*dto.SignIn
 	res := u.bcryptUsecase.GenerateAccessToken(*user)
 
 	return &res, nil
+}
+
+func (u *userUsecaseImpl) generateReferralCode() string {
+	rand.Seed(time.Now().UnixNano())
+	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	referralCode := ""
+
+	for i := 0; i < 7; i++ {
+		referralCode += string(alphabet[rand.Intn(len(alphabet))])
+	}
+
+	return referralCode
 }

@@ -1,9 +1,16 @@
 package entity
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Tag struct {
-	ID   int
-	Name string
-	gorm.Model
+	ID        int            `json:"id" gorm:"primaryKey"`
+	Name      string         `json:"name" gorm:"unique"`
+	Courses   []*Course      `json:"courses,omitempty" gorm:"many2many:course_tags;"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }

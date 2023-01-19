@@ -1,6 +1,10 @@
 package dto
 
-import "final-project-backend/entity"
+import (
+	"final-project-backend/entity"
+	"final-project-backend/utils/constant"
+	"strings"
+)
 
 type SignInRequest struct {
 	Identifier string `json:"identifier" binding:"required"`
@@ -32,17 +36,26 @@ type SignUpResponse struct {
 }
 
 func (s *SignUpRequest) ToUser() entity.User {
+	replacer := strings.NewReplacer("@", "", " ", "")
+
 	return entity.User{
-		Email:       s.Email,
-		Username:    s.Username,
-		Fullname:    s.Fullname,
-		Address:     s.Address,
-		PhoneNo:     s.PhoneNo,
-		RefReferral: s.RefReferral,
+		Email:    s.Email,
+		Username: replacer.Replace(s.Username),
+		Fullname: s.Fullname,
+		Address:  s.Address,
+		PhoneNo:  s.PhoneNo,
+		RefReferral: func() *string {
+			if s.RefReferral != "" {
+				return &s.RefReferral
+			}
+			return nil
+		}(),
+		RoleId:  constant.UserRoleId,
+		LevelId: constant.NewbieLevelId,
 	}
 }
 
-func (s *SignUpResponse) UserToResponse(u entity.User) {
+func (s *SignUpResponse) FromUser(u entity.User) {
 	s.Id = u.ID
 	s.Email = u.Email
 	s.Username = u.Username

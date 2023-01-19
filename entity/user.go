@@ -11,7 +11,7 @@ type User struct {
 	Address     string
 	PhoneNo     string
 	Referral    string
-	RefReferral string
+	RefReferral *string
 	RoleId      int
 	Role        Role `gorm:"foreignKey:RoleId"`
 	LevelId     int

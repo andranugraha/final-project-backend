@@ -58,10 +58,10 @@ func Authenticated(c *gin.Context) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		intId := claims["userId"].(int)
+		intId := int(claims["userId"].(float64))
 		c.Set("userId", intId)
 
-		intRoleId := claims["roleId"].(int)
+		intRoleId := int(claims["roleId"].(float64))
 		c.Set("roleId", intRoleId)
 
 		c.Next()
