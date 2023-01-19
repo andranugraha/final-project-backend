@@ -104,7 +104,13 @@ func (r *courseRepositoryImpl) Update(req entity.Course) (*entity.Course, error)
 		}
 	}
 
-	err := tx.Save(&req).Error
+	err := tx.Model(&req).Association("Tags").Replace(req.Tags)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	err = tx.Save(&req).Error
 	if err != nil {
 		tx.Rollback()
 		if pgError := err.(*pgconn.PgError); errors.Is(err, pgError) {
