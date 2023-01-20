@@ -1,12 +1,14 @@
 package usecase
 
 import (
+	"final-project-backend/dto"
 	"final-project-backend/entity"
 	"final-project-backend/repository"
 )
 
 type UserUsecase interface {
 	GetUserDetail(userId int) (*entity.User, error)
+	UpdateUserDetail(userId int, req dto.UpdateUserDetailRequest) (*entity.User, error)
 }
 
 type userUsecaseImpl struct {
@@ -25,4 +27,8 @@ func NewUserUsecase(cfg *UserUConfig) UserUsecase {
 
 func (u *userUsecaseImpl) GetUserDetail(userId int) (*entity.User, error) {
 	return u.userRepo.GetDetailById(userId)
+}
+
+func (u *userUsecaseImpl) UpdateUserDetail(userId int, req dto.UpdateUserDetailRequest) (*entity.User, error) {
+	return u.userRepo.UpdateDetail(req.ToUser(userId))
 }

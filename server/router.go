@@ -54,6 +54,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		user := v1.Group("/user", middleware.Authenticated)
 		{
 			user.GET("/", h.GetUserDetail)
+			user.PUT("/", h.UpdateUserDetail)
 		}
 
 		course := v1.Group("/courses")

@@ -16,6 +16,7 @@ const (
 var (
 	ErrDuplicateRecord       = errors.New("duplicate record")
 	ErrDuplicateTitle        = errors.New("duplicate title")
+	ErrDuplicatePhoneNo      = errors.New("duplicate phone number")
 	ErrInvalidBody           = errors.New("invalid body request")
 	ErrInvalidParam          = errors.New("invalid params")
 	ErrUserNotFound          = errors.New("user not found")

@@ -13,8 +13,8 @@ type User struct {
 	Referral    string  `json:"referral"`
 	RefReferral *string `json:"refReferral,omitempty"`
 	RoleId      int     `json:"roleId"`
-	Role        Role    `json:"role" gorm:"foreignKey:RoleId"`
+	Role        *Role   `json:"role,omitempty" gorm:"foreignKey:RoleId"`
 	LevelId     int     `json:"levelId"`
-	Level       Level   `json:"level" gorm:"foreignKey:LevelId"`
+	Level       *Level  `json:"level,omitempty" gorm:"foreignKey:LevelId"`
 	gorm.Model  `json:"-"`
 }

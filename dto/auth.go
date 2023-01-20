@@ -8,16 +8,16 @@ import (
 
 type SignInRequest struct {
 	Identifier string `json:"identifier" binding:"required"`
-	Password   string `json:"password" binding:"required,min=8"`
+	Password   string `json:"password" binding:"required,min=8,max=20"`
 }
 
 type SignUpRequest struct {
 	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8"`
-	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required,min=8,max=20"`
+	Username    string `json:"username" binding:"required,min=3,max=20"`
 	Fullname    string `json:"fullname" binding:"required"`
 	Address     string `json:"address" binding:"required"`
-	PhoneNo     string `json:"phoneNo" binding:"required"`
+	PhoneNo     string `json:"phoneNo" binding:"required,numeric,min=10,max=14"`
 	RefReferral string `json:"refReferral"`
 }
 

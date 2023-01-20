@@ -16,6 +16,7 @@ type UserRepository interface {
 	GetByIdentifierAndRole(string, int) (*entity.User, error)
 	GetDetailById(int) (*entity.User, error)
 	Insert(entity.User) (*entity.User, error)
+	UpdateDetail(entity.User) (*entity.User, error)
 }
 
 type userRepositoryImpl struct {
@@ -83,4 +84,22 @@ func (r *userRepositoryImpl) Insert(req entity.User) (*entity.User, error) {
 	}
 
 	return &req, nil
+}
+
+func (r *userRepositoryImpl) UpdateDetail(req entity.User) (*entity.User, error) {
+	res := r.db.Model(&req).Select("Fullname", "Address", "PhoneNo").Clauses(clause.Returning{}).Updates(req)
+	if res.Error != nil {
+		if pgError := res.Error.(*pgconn.PgError); errors.Is(res.Error, pgError) {
+			if pgError.Code == errResp.ErrSqlUniqueViolation {
+				res.Error = errResp.ErrDuplicatePhoneNo
+			}
+		}
+		return nil, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return nil, errResp.ErrUserNotFound
+	}
+
+	return &req, res.Error
 }

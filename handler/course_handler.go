@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"final-project-backend/dto"
 	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
@@ -20,7 +21,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 
 	res, err := h.courseUsecase.CreateCourse(req)
 	if err != nil {
-		if err == errResp.ErrDuplicateTitle {
+		if errors.Is(err, errResp.ErrDuplicateTitle) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeDuplicate, err.Error())
 			return
 		}
@@ -53,7 +54,7 @@ func (h *Handler) GetCourse(c *gin.Context) {
 
 	res, err := h.courseUsecase.GetCourse(slug)
 	if err != nil {
-		if err == errResp.ErrCourseNotFound {
+		if errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
 			return
 		}
@@ -75,7 +76,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 	slug := c.Param("slug")
 	res, err := h.courseUsecase.UpdateCourse(slug, req)
 	if err != nil {
-		if err == errResp.ErrCourseNotFound {
+		if errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
 			return
 		}
@@ -96,7 +97,7 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 	slug := c.Param("slug")
 	err := h.courseUsecase.DeleteCourse(slug)
 	if err != nil {
-		if err == errResp.ErrCourseNotFound {
+		if errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
 			return
 		}
