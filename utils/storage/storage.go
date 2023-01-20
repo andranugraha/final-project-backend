@@ -11,23 +11,30 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 )
 
+var (
+	cld *cloudinary.Cloudinary
+	ctx context.Context
+)
+
 type StoredImage struct {
 	Url          string
 	ThumbnailUrl string
 }
 
-func driver() (*cloudinary.Cloudinary, context.Context) {
-	cld, _ := cloudinary.NewFromURL(config.CloudinaryUrl)
+func Connect() (err error) {
+	cld, err = cloudinary.NewFromURL(config.CloudinaryUrl)
+	if err != nil {
+		return
+	}
+
 	cld.Config.URL.Secure = true
-	ctx := context.Background()
-	return cld, ctx
+	ctx = context.Background()
+	return
 }
 
 func Upload(image *multipart.FileHeader, fileName string) (*StoredImage, error) {
 	imageFile, _ := image.Open()
 	defer imageFile.Close()
-
-	cld, ctx := driver()
 
 	uploadResult, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{
 		PublicID: fileName,
@@ -44,8 +51,6 @@ func Upload(image *multipart.FileHeader, fileName string) (*StoredImage, error) 
 }
 
 func Rename(oldName, newName string) (*StoredImage, error) {
-	cld, ctx := driver()
-
 	updatedResult, err := cld.Upload.Rename(ctx, uploader.RenameParams{
 		FromPublicID: oldName,
 		ToPublicID:   newName,
@@ -61,8 +66,6 @@ func Rename(oldName, newName string) (*StoredImage, error) {
 }
 
 func Delete(fileName string) error {
-	cld, ctx := driver()
-
 	res, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
 		PublicID: "courses/" + fileName,
 	})
@@ -78,5 +81,5 @@ func Delete(fileName string) error {
 }
 
 func getThumbnailUrl(url string) string {
-	return strings.Replace(url, "upload/", "upload/w_300,h_300,c_fill,g_auto/", 1)
+	return strings.Replace(url, "upload/", "upload/w_auto,h_300,c_fill,g_auto/", 1)
 }

@@ -8,11 +8,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepository interface {
 	GetById(int) (*entity.User, error)
 	GetByIdentifierAndRole(string, int) (*entity.User, error)
+	GetDetailById(int) (*entity.User, error)
 	Insert(entity.User) (*entity.User, error)
 }
 
@@ -46,6 +48,19 @@ func (r *userRepositoryImpl) GetByIdentifierAndRole(identifier string, roleId in
 	err := r.db.Where(
 		r.db.Where("email = ?", identifier).Or("username = ?", identifier),
 	).Where("role_id = ?", roleId).First(&res)
+	if err.Error != nil {
+		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
+			return nil, errResp.ErrUserNotFound
+		}
+		return nil, err.Error
+	}
+
+	return res, nil
+}
+
+func (r *userRepositoryImpl) GetDetailById(id int) (*entity.User, error) {
+	var res *entity.User
+	err := r.db.Preload(clause.Associations).First(&res, id)
 	if err.Error != nil {
 		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrUserNotFound

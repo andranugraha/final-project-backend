@@ -20,7 +20,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
-	res, err := h.userUsecase.SignIn(req, constant.UserRoleId)
+	res, err := h.authUsecase.SignIn(req, constant.UserRoleId)
 	if err != nil {
 		if errors.Is(err, errResp.ErrUserNotFound) || errors.Is(err, errResp.ErrWrongPassword) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
@@ -42,7 +42,7 @@ func (h *Handler) AdminSignIn(c *gin.Context) {
 		return
 	}
 
-	res, err := h.userUsecase.SignIn(req, constant.AdminRoleId)
+	res, err := h.authUsecase.SignIn(req, constant.AdminRoleId)
 	if err != nil {
 		if errors.Is(err, errResp.ErrUserNotFound) || errors.Is(err, errResp.ErrWrongPassword) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
@@ -64,7 +64,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
-	res, err := h.userUsecase.SignUp(req)
+	res, err := h.authUsecase.SignUp(req)
 	if err != nil {
 		if errors.Is(err, errResp.ErrDuplicateRecord) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())

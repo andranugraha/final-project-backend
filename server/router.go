@@ -12,6 +12,7 @@ import (
 )
 
 type RouterConfig struct {
+	AuthUsecase   usecase.AuthUsecase
 	UserUsecase   usecase.UserUsecase
 	CourseUsecase usecase.CourseUsecase
 }
@@ -19,6 +20,7 @@ type RouterConfig struct {
 func NewRouter(cfg *RouterConfig) *gin.Engine {
 	router := gin.Default()
 	h := handler.New(&handler.Config{
+		AuthUsecase:   cfg.AuthUsecase,
 		UserUsecase:   cfg.UserUsecase,
 		CourseUsecase: cfg.CourseUsecase,
 	})
@@ -48,6 +50,11 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 
 		v1.POST("/sign-in", h.SignIn)
 		v1.POST("/sign-up", h.SignUp)
+
+		user := v1.Group("/user", middleware.Authenticated)
+		{
+			user.GET("/", h.GetUserDetail)
+		}
 
 		course := v1.Group("/courses")
 		{

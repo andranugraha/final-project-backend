@@ -3,18 +3,18 @@ package entity
 import "gorm.io/gorm"
 
 type User struct {
-	ID          int
-	Email       string
-	Password    string
-	Username    string
-	Fullname    string
-	Address     string
-	PhoneNo     string
-	Referral    string
-	RefReferral *string
-	RoleId      int
-	Role        Role `gorm:"foreignKey:RoleId"`
-	LevelId     int
-	Level       Level `gorm:"foreignKey:LevelId"`
-	gorm.Model
+	ID          int     `json:"id" gorm:"primaryKey"`
+	Email       string  `json:"email"`
+	Password    string  `json:"-"`
+	Username    string  `json:"username"`
+	Fullname    string  `json:"fullname"`
+	Address     string  `json:"address"`
+	PhoneNo     string  `json:"phoneNo"`
+	Referral    string  `json:"referral"`
+	RefReferral *string `json:"refReferral,omitempty"`
+	RoleId      int     `json:"roleId"`
+	Role        Role    `json:"role" gorm:"foreignKey:RoleId"`
+	LevelId     int     `json:"levelId"`
+	Level       Level   `json:"level" gorm:"foreignKey:LevelId"`
+	gorm.Model  `json:"-"`
 }

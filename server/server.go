@@ -15,9 +15,12 @@ func createRouter() *gin.Engine {
 	userRepo := repository.NewUserRepository(&repository.UserRConfig{
 		DB: db.Get(),
 	})
-	userUsecase := usecase.NewUserUsecase(&usecase.UserUConfig{
+	authUsecase := usecase.NewAuthUsecase(&usecase.AuthUConfig{
 		UserRepo:      userRepo,
 		BcryptUsecase: auth.AuthUtilImpl{},
+	})
+	userUsecase := usecase.NewUserUsecase(&usecase.UserUConfig{
+		UserRepo: userRepo,
 	})
 
 	tagRepo := repository.NewTagRepository(&repository.TagRConfig{
@@ -33,6 +36,7 @@ func createRouter() *gin.Engine {
 	})
 
 	return NewRouter(&RouterConfig{
+		AuthUsecase:   authUsecase,
 		UserUsecase:   userUsecase,
 		CourseUsecase: courseUsecase,
 	})
