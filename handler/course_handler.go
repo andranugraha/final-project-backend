@@ -13,8 +13,7 @@ import (
 
 func (h *Handler) CreateCourse(c *gin.Context) {
 	var req dto.CreateCourseRequest
-	err := c.ShouldBind(&req)
-	if err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 		return
 	}
@@ -67,15 +66,13 @@ func (h *Handler) GetCourse(c *gin.Context) {
 }
 
 func (h *Handler) UpdateCourse(c *gin.Context) {
-	slug := c.Param("slug")
-
 	var req dto.UpdateCourseRequest
-	err := c.ShouldBind(&req)
-	if err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 		return
 	}
 
+	slug := c.Param("slug")
 	res, err := h.courseUsecase.UpdateCourse(slug, req)
 	if err != nil {
 		if err == errResp.ErrCourseNotFound {
@@ -97,7 +94,6 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 
 func (h *Handler) DeleteCourse(c *gin.Context) {
 	slug := c.Param("slug")
-
 	err := h.courseUsecase.DeleteCourse(slug)
 	if err != nil {
 		if err == errResp.ErrCourseNotFound {

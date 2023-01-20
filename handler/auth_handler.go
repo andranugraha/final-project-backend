@@ -14,8 +14,7 @@ import (
 
 func (h *Handler) SignIn(c *gin.Context) {
 	var req dto.SignInRequest
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
@@ -36,8 +35,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 
 func (h *Handler) AdminSignIn(c *gin.Context) {
 	var req dto.SignInRequest
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
@@ -58,8 +56,7 @@ func (h *Handler) AdminSignIn(c *gin.Context) {
 
 func (h *Handler) SignUp(c *gin.Context) {
 	var req dto.SignUpRequest
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
