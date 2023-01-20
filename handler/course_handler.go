@@ -2,9 +2,11 @@ package handler
 
 import (
 	"final-project-backend/dto"
+	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
 	"final-project-backend/utils/response"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +30,23 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 	}
 
 	response.SendSuccess(c, http.StatusOK, res)
+}
+
+func (h *Handler) GetCourses(c *gin.Context) {
+	roleId := c.GetInt("roleId")
+	categoryId, _ := strconv.Atoi(c.Query("categoryId"))
+	tagId, _ := strconv.Atoi(c.Query("tagId"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	page, _ := strconv.Atoi(c.Query("page"))
+	params := entity.NewCourseParams(c.Query("title"), categoryId, tagId, c.Query("sort"), limit, page, roleId, c.Query("status"))
+
+	res, totalRows, totalPages, err := h.courseUsecase.GetCourses(params)
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
+		return
+	}
+
+	response.SendSuccessWithPagination(c, http.StatusOK, res, totalRows, totalPages)
 }
 
 func (h *Handler) GetCourse(c *gin.Context) {

@@ -29,20 +29,34 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		response.SendError(c, http.StatusNotFound, errors.ErrCodeRouteNotFound, errors.ErrRouteNotFound.Error())
 	})
 
-	admin := router.Group("/admin")
+	v1 := router.Group("/api/v1")
 	{
-		admin.POST("/sign-in", h.AdminSignIn)
-	}
+		admin := v1.Group("/admin")
+		{
+			admin.POST("/sign-in", h.AdminSignIn)
+			authenticated := admin.Group("/", middleware.Authenticated, middleware.Admin)
+			{
+				course := authenticated.Group("/courses")
+				{
+					course.GET("/", h.GetCourses)
+					course.POST("/", h.CreateCourse)
+					course.PUT("/:slug", h.UpdateCourse)
+					course.DELETE("/:slug", h.DeleteCourse)
+				}
+			}
+		}
 
-	router.POST("/sign-in", h.SignIn)
-	router.POST("/sign-up", h.SignUp)
+		v1.POST("/sign-in", h.SignIn)
+		v1.POST("/sign-up", h.SignUp)
 
-	course := router.Group("/courses", middleware.Authenticated)
-	{
-		course.GET("/:slug", h.GetCourse)
-		course.POST("/", middleware.Admin, h.CreateCourse)
-		course.PUT("/:slug", middleware.Admin, h.UpdateCourse)
-		course.DELETE("/:slug", middleware.Admin, h.DeleteCourse)
+		course := v1.Group("/courses")
+		{
+			course.GET("/", h.GetCourses)
+			authenticatedCourse := course.Group("/", middleware.Authenticated)
+			{
+				authenticatedCourse.GET("/:slug", h.GetCourse)
+			}
+		}
 	}
 
 	return router

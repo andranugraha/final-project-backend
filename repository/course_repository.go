@@ -4,6 +4,7 @@ import (
 	"errors"
 	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
+	"math"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ import (
 type CourseRepository interface {
 	Insert(entity.Course) (*entity.Course, error)
 	FindBySlug(string) (*entity.Course, error)
+	FindAll(entity.CourseParams) ([]entity.Course, int64, int, error)
 	Update(entity.Course) (*entity.Course, error)
 	Delete(string) error
 }
@@ -68,6 +70,22 @@ func (r *courseRepositoryImpl) Insert(req entity.Course) (*entity.Course, error)
 	tx.Commit()
 
 	return &req, nil
+}
+
+func (r *courseRepositoryImpl) FindAll(params entity.CourseParams) ([]entity.Course, int64, int, error) {
+	var courses []entity.Course
+	var count int64
+
+	db := r.db.Preload("Tags").Preload("Category").Scopes(params.Scope())
+	db.Model(&courses).Count(&count)
+	totalPages := int(math.Ceil(float64(count) / float64(params.Limit)))
+
+	err := db.Order(params.Sort).Offset(params.Offset()).Limit(params.Limit).Find(&courses).Error
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	return courses, count, totalPages, nil
 }
 
 func (r *courseRepositoryImpl) FindBySlug(slug string) (*entity.Course, error) {
