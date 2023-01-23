@@ -14,18 +14,26 @@ const (
 )
 
 var (
-	ErrDuplicateRecord       = errors.New("duplicate record")
-	ErrDuplicateTitle        = errors.New("duplicate title")
-	ErrDuplicatePhoneNo      = errors.New("duplicate phone number")
-	ErrDuplicateFavorite     = errors.New("duplicate favorite")
-	ErrDuplicateCart         = errors.New("duplicate cart")
-	ErrInvalidBody           = errors.New("invalid body request")
-	ErrInvalidParam          = errors.New("invalid params")
-	ErrUserNotFound          = errors.New("user not found")
-	ErrRecordNotFound        = errors.New("record not found")
-	ErrCourseNotFound        = errors.New("course not found")
-	ErrCartNotFound          = errors.New("cart item not found")
-	ErrFavoriteNotFound      = errors.New("favorite item not found")
+	ErrDuplicateRecord   = errors.New("duplicate record")
+	ErrDuplicateTitle    = errors.New("duplicate title")
+	ErrDuplicatePhoneNo  = errors.New("duplicate phone number")
+	ErrDuplicateFavorite = errors.New("duplicate favorite")
+	ErrDuplicateCart     = errors.New("duplicate cart")
+
+	ErrInvalidBody  = errors.New("invalid body request")
+	ErrInvalidParam = errors.New("invalid params")
+
+	ErrUserNotFound     = errors.New("user not found")
+	ErrRecordNotFound   = errors.New("record not found")
+	ErrCourseNotFound   = errors.New("course not found")
+	ErrCartNotFound     = errors.New("cart item not found")
+	ErrFavoriteNotFound = errors.New("favorite item not found")
+	ErrVoucherNotFound  = errors.New("voucher not found")
+	ErrInvoiceNotFound  = errors.New("invoice not found")
+
+	ErrCartEmpty          = errors.New("cart is empty")
+	ErrInvoiceAlreadyPaid = errors.New("invoice already paid")
+
 	ErrWrongPassword         = errors.New("password mismatch")
 	ErrForbidden             = errors.New("forbidden access to resources")
 	ErrRouteNotFound         = errors.New("the requested route is not exist")

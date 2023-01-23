@@ -14,6 +14,12 @@ const (
 	// Status
 	DraftStatus   = "draft"
 	PublishStatus = "publish"
+
+	//Invoice
+	InvoiceStatusWaitingPayment      = "waiting_payment"
+	InvoiceStatusWaitingConfirmation = "waiting_confirmation"
+	InvoiceStatusCompleted           = "completed"
+	InvoiceStatusCancelled           = "cancelled"
 )
 
 var (

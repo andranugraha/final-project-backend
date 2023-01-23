@@ -57,7 +57,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		v1.POST("/sign-in", h.SignIn)
 		v1.POST("/sign-up", h.SignUp)
 
-		user := v1.Group("/user", middleware.Authenticated)
+		user := v1.Group("/user", middleware.Authenticated, middleware.User)
 		{
 			user.GET("/", h.GetUserDetail)
 			user.PUT("/", h.UpdateUserDetail)
@@ -78,11 +78,18 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 			favorite.POST("/:courseId/:action", h.SaveUnsaveFavoriteCourse)
 		}
 
-		cart := v1.Group("/carts", middleware.Authenticated)
+		cart := v1.Group("/carts", middleware.Authenticated, middleware.User)
 		{
 			cart.GET("/", h.GetCart)
 			cart.POST("/:courseId", h.AddToCart)
 			cart.DELETE("/:courseId", h.RemoveFromCart)
+		}
+
+		invoice := v1.Group("/invoices", middleware.Authenticated)
+		{
+			invoice.GET("/", h.GetInvoices)
+			invoice.POST("/", h.Checkout)
+			invoice.POST("/:invoiceId/pay", h.PayInvoice)
 		}
 	}
 

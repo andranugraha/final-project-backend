@@ -8,9 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Admin(c *gin.Context) {
+func User(c *gin.Context) {
 	roleId := c.GetInt("roleId")
-	if roleId != constant.AdminRoleId {
+	if roleId != constant.UserRoleId {
 		response.SendError(c, 403, errors.ErrCodeForbidden, errors.ErrForbidden.Error())
 		return
 	}

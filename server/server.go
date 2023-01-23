@@ -45,16 +45,27 @@ func createRouter() *gin.Engine {
 	cartRepo := repository.NewCartRepository(&repository.CartRConfig{
 		DB: db.Get(),
 	})
-
 	cartUsecase := usecase.NewCartUsecase(&usecase.CartUConfig{
 		CartRepo: cartRepo,
 	})
 
-	invoiceRepo := repository.NewInvoiceRepository(&repository.InvoiceRConfig{
+	userVoucherRepo := repository.NewUserVoucherRepository(&repository.UserVoucherRConfig{
 		DB: db.Get(),
 	})
+	UserVoucherUsecase := usecase.NewUserVoucherUsecase(&usecase.UserVoucherUConfig{
+		UserVoucherRepo: userVoucherRepo,
+	})
+
+	invoiceRepo := repository.NewInvoiceRepository(&repository.InvoiceRConfig{
+		DB:              db.Get(),
+		CartRepo:        cartRepo,
+		UserVoucherRepo: userVoucherRepo,
+	})
 	invoiceUsecase := usecase.NewInvoiceUsecase(&usecase.InvoiceUConfig{
-		InvoiceRepo: invoiceRepo,
+		InvoiceRepo:        invoiceRepo,
+		CartRepo:           cartRepo,
+		UserVoucherUsecase: UserVoucherUsecase,
+		UserUsecase:        userUsecase,
 	})
 
 	return NewRouter(&RouterConfig{

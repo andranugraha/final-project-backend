@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type CourseRepository interface {
@@ -76,7 +77,7 @@ func (r *courseRepositoryImpl) FindAll(params entity.CourseParams) ([]entity.Cou
 	var courses []entity.Course
 	var count int64
 
-	db := r.db.Preload("Tags").Preload("Category").Scopes(params.Scope())
+	db := r.db.Preload(clause.Associations).Scopes(params.Scope())
 	db.Model(&courses).Count(&count)
 	totalPages := int(math.Ceil(float64(count) / float64(params.Limit)))
 
@@ -91,7 +92,7 @@ func (r *courseRepositoryImpl) FindAll(params entity.CourseParams) ([]entity.Cou
 func (r *courseRepositoryImpl) FindBySlug(slug string) (*entity.Course, error) {
 	var course *entity.Course
 
-	err := r.db.Preload("Tags").Preload("Category").Where("slug = ?", slug).First(&course).Error
+	err := r.db.Preload(clause.Associations).Where("slug = ?", slug).First(&course).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrCourseNotFound

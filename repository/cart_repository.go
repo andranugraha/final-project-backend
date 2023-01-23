@@ -13,6 +13,7 @@ type CartRepository interface {
 	FindByUserId(userId int) ([]*entity.Cart, error)
 	Insert(cart entity.Cart) error
 	Delete(cart entity.Cart) error
+	EmptyCart(tx *gorm.DB, userId int) error
 }
 
 type cartRepositoryImpl struct {
@@ -60,6 +61,15 @@ func (r *cartRepositoryImpl) Delete(cart entity.Cart) error {
 
 	if err.RowsAffected == 0 {
 		return errResp.ErrCartNotFound
+	}
+
+	return nil
+}
+
+func (r *cartRepositoryImpl) EmptyCart(tx *gorm.DB, userId int) error {
+	err := tx.Unscoped().Where("user_id = ?", userId).Delete(&entity.Cart{}).Error
+	if err != nil {
+		return err
 	}
 
 	return nil
