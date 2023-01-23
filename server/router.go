@@ -17,6 +17,7 @@ type RouterConfig struct {
 	CourseUsecase   usecase.CourseUsecase
 	FavoriteUsecase usecase.FavoriteUsecase
 	CartUsecase     usecase.CartUsecase
+	InvoiceUsecase  usecase.InvoiceUsecase
 }
 
 func NewRouter(cfg *RouterConfig) *gin.Engine {
@@ -27,6 +28,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		CourseUsecase:   cfg.CourseUsecase,
 		FavoriteUsecase: cfg.FavoriteUsecase,
 		CartUsecase:     cfg.CartUsecase,
+		InvoiceUsecase:  cfg.InvoiceUsecase,
 	})
 
 	router.Static("/docs", "swagger-ui")
@@ -80,6 +82,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		{
 			cart.GET("/", h.GetCart)
 			cart.POST("/:courseId", h.AddToCart)
+			cart.DELETE("/:courseId", h.RemoveFromCart)
 		}
 	}
 

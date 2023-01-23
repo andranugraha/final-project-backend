@@ -32,6 +32,11 @@ func (h *Handler) SaveUnsaveFavoriteCourse(c *gin.Context) {
 
 	err = h.favoriteUsecase.SaveUnsaveFavoriteCourse(userId, courseId, action)
 	if err != nil {
+		if errors.Is(err, errResp.ErrFavoriteNotFound) {
+			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
+			return
+		}
+
 		if errors.Is(err, errResp.ErrDuplicateFavorite) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 			return

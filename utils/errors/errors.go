@@ -24,6 +24,8 @@ var (
 	ErrUserNotFound          = errors.New("user not found")
 	ErrRecordNotFound        = errors.New("record not found")
 	ErrCourseNotFound        = errors.New("course not found")
+	ErrCartNotFound          = errors.New("cart item not found")
+	ErrFavoriteNotFound      = errors.New("favorite item not found")
 	ErrWrongPassword         = errors.New("password mismatch")
 	ErrForbidden             = errors.New("forbidden access to resources")
 	ErrRouteNotFound         = errors.New("the requested route is not exist")

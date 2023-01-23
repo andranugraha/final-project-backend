@@ -54,9 +54,13 @@ func (r *favoriteRepositoryImpl) Insert(favorite entity.Favorite) error {
 }
 
 func (r *favoriteRepositoryImpl) Delete(favorite entity.Favorite) error {
-	err := r.db.Unscoped().Where("user_id = ?", favorite.UserId).Where("course_id = ?", favorite.CourseId).Delete(&favorite).Error
-	if err != nil {
-		return err
+	err := r.db.Unscoped().Where("user_id = ?", favorite.UserId).Where("course_id = ?", favorite.CourseId).Delete(&favorite)
+	if err.Error != nil {
+		return err.Error
+	}
+
+	if err.RowsAffected == 0 {
+		return errResp.ErrFavoriteNotFound
 	}
 
 	return nil
