@@ -7,7 +7,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type FavoriteRepository interface {
@@ -41,10 +40,7 @@ func (r *favoriteRepositoryImpl) FindByUserId(userId int) ([]*entity.Course, err
 }
 
 func (r *favoriteRepositoryImpl) Insert(favorite entity.Favorite) error {
-	err := r.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}, {Name: "course_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"updated_at", "deleted_at"}),
-	}).Create(&favorite).Error
+	err := r.db.Create(&favorite).Error
 	if err != nil {
 		if pgError := err.(*pgconn.PgError); errors.Is(err, pgError) {
 			if pgError.Code == errResp.ErrSqlUniqueViolation {
@@ -58,7 +54,7 @@ func (r *favoriteRepositoryImpl) Insert(favorite entity.Favorite) error {
 }
 
 func (r *favoriteRepositoryImpl) Delete(favorite entity.Favorite) error {
-	err := r.db.Where("user_id = ?", favorite.UserId).Where("course_id = ?", favorite.CourseId).Delete(&favorite).Error
+	err := r.db.Unscoped().Where("user_id = ?", favorite.UserId).Where("course_id = ?", favorite.CourseId).Delete(&favorite).Error
 	if err != nil {
 		return err
 	}
