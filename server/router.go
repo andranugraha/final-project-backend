@@ -12,17 +12,21 @@ import (
 )
 
 type RouterConfig struct {
-	AuthUsecase   usecase.AuthUsecase
-	UserUsecase   usecase.UserUsecase
-	CourseUsecase usecase.CourseUsecase
+	AuthUsecase     usecase.AuthUsecase
+	UserUsecase     usecase.UserUsecase
+	CourseUsecase   usecase.CourseUsecase
+	FavoriteUsecase usecase.FavoriteUsecase
+	CartUsecase     usecase.CartUsecase
 }
 
 func NewRouter(cfg *RouterConfig) *gin.Engine {
 	router := gin.Default()
 	h := handler.New(&handler.Config{
-		AuthUsecase:   cfg.AuthUsecase,
-		UserUsecase:   cfg.UserUsecase,
-		CourseUsecase: cfg.CourseUsecase,
+		AuthUsecase:     cfg.AuthUsecase,
+		UserUsecase:     cfg.UserUsecase,
+		CourseUsecase:   cfg.CourseUsecase,
+		FavoriteUsecase: cfg.FavoriteUsecase,
+		CartUsecase:     cfg.CartUsecase,
 	})
 
 	router.Static("/docs", "swagger-ui")
@@ -64,6 +68,18 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 			{
 				authenticatedCourse.GET("/:slug", h.GetCourse)
 			}
+		}
+
+		favorite := v1.Group("/favorites", middleware.Authenticated)
+		{
+			favorite.GET("/", h.GetFavoriteCourses)
+			favorite.POST("/:courseId/:action", h.SaveUnsaveFavoriteCourse)
+		}
+
+		cart := v1.Group("/carts", middleware.Authenticated)
+		{
+			cart.GET("/", h.GetCart)
+			cart.POST("/:courseId", h.AddToCart)
 		}
 	}
 

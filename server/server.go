@@ -35,10 +35,27 @@ func createRouter() *gin.Engine {
 		CourseRepo: courseRepo,
 	})
 
+	favoriteRepo := repository.NewFavoriteRepository(&repository.FavoriteRConfig{
+		DB: db.Get(),
+	})
+	favoriteUsecase := usecase.NewFavoriteUsecase(&usecase.FavoriteUConfig{
+		FavoriteRepo: favoriteRepo,
+	})
+
+	cartRepo := repository.NewCartRepository(&repository.CartRConfig{
+		DB: db.Get(),
+	})
+
+	cartUsecase := usecase.NewCartUsecase(&usecase.CartUConfig{
+		CartRepo: cartRepo,
+	})
+
 	return NewRouter(&RouterConfig{
-		AuthUsecase:   authUsecase,
-		UserUsecase:   userUsecase,
-		CourseUsecase: courseUsecase,
+		AuthUsecase:     authUsecase,
+		UserUsecase:     userUsecase,
+		CourseUsecase:   courseUsecase,
+		FavoriteUsecase: favoriteUsecase,
+		CartUsecase:     cartUsecase,
 	})
 }
 
