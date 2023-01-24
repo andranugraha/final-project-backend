@@ -7,12 +7,12 @@ import (
 )
 
 type UserVoucher struct {
-	ID         int
-	UserId     int
-	User       User `gorm:"foreignKey:UserId"`
-	VoucherId  int
-	Voucher    Voucher `gorm:"foreignKey:VoucherId"`
-	ExpiryDate time.Time
-	IsConsumed bool
-	gorm.Model
+	ID         int       `json:"id" gorm:"primaryKey"`
+	UserId     int       `json:"user_id"`
+	User       *User     `json:"user,omitempty" gorm:"foreignKey:UserId"`
+	VoucherId  int       `json:"voucher_id"`
+	Voucher    Voucher   `json:"voucher" gorm:"foreignKey:VoucherId"`
+	ExpiryDate time.Time `json:"expiry_date"`
+	IsConsumed bool      `json:"is_consumed"`
+	gorm.Model `json:"-"`
 }

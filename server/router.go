@@ -12,23 +12,25 @@ import (
 )
 
 type RouterConfig struct {
-	AuthUsecase     usecase.AuthUsecase
-	UserUsecase     usecase.UserUsecase
-	CourseUsecase   usecase.CourseUsecase
-	FavoriteUsecase usecase.FavoriteUsecase
-	CartUsecase     usecase.CartUsecase
-	InvoiceUsecase  usecase.InvoiceUsecase
+	AuthUsecase        usecase.AuthUsecase
+	UserUsecase        usecase.UserUsecase
+	CourseUsecase      usecase.CourseUsecase
+	FavoriteUsecase    usecase.FavoriteUsecase
+	CartUsecase        usecase.CartUsecase
+	InvoiceUsecase     usecase.InvoiceUsecase
+	UserVoucherUsecase usecase.UserVoucherUsecase
 }
 
 func NewRouter(cfg *RouterConfig) *gin.Engine {
 	router := gin.Default()
 	h := handler.New(&handler.Config{
-		AuthUsecase:     cfg.AuthUsecase,
-		UserUsecase:     cfg.UserUsecase,
-		CourseUsecase:   cfg.CourseUsecase,
-		FavoriteUsecase: cfg.FavoriteUsecase,
-		CartUsecase:     cfg.CartUsecase,
-		InvoiceUsecase:  cfg.InvoiceUsecase,
+		AuthUsecase:        cfg.AuthUsecase,
+		UserUsecase:        cfg.UserUsecase,
+		CourseUsecase:      cfg.CourseUsecase,
+		FavoriteUsecase:    cfg.FavoriteUsecase,
+		CartUsecase:        cfg.CartUsecase,
+		InvoiceUsecase:     cfg.InvoiceUsecase,
+		UserVoucherUsecase: cfg.UserVoucherUsecase,
 	})
 
 	router.Static("/docs", "swagger-ui")
@@ -78,7 +80,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 			}
 		}
 
-		favorite := v1.Group("/favorites", middleware.Authenticated)
+		favorite := v1.Group("/favorites", middleware.Authenticated, middleware.User)
 		{
 			favorite.GET("/", h.GetFavoriteCourses)
 			favorite.GET("/:courseId", h.CheckIsFavoriteCourse)
@@ -103,6 +105,11 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 			}
 
 			invoice.POST("/:invoiceId/confirm", middleware.Admin, h.ConfirmInvoice)
+		}
+
+		voucher := v1.Group("/vouchers", middleware.Authenticated, middleware.User)
+		{
+			voucher.GET("/", h.GetUserVouchers)
 		}
 	}
 

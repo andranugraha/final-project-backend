@@ -91,12 +91,13 @@ func createRouter() *gin.Engine {
 	})
 
 	return NewRouter(&RouterConfig{
-		AuthUsecase:     authUsecase,
-		UserUsecase:     userUsecase,
-		CourseUsecase:   courseUsecase,
-		FavoriteUsecase: favoriteUsecase,
-		CartUsecase:     cartUsecase,
-		InvoiceUsecase:  invoiceUsecase,
+		AuthUsecase:        authUsecase,
+		UserUsecase:        userUsecase,
+		CourseUsecase:      courseUsecase,
+		FavoriteUsecase:    favoriteUsecase,
+		CartUsecase:        cartUsecase,
+		InvoiceUsecase:     invoiceUsecase,
+		UserVoucherUsecase: UserVoucherUsecase,
 	})
 }
 

@@ -10,6 +10,7 @@ import (
 )
 
 type UserVoucherRepository interface {
+	FindAll(int) ([]entity.UserVoucher, error)
 	FindValidByCode(string, int) (*entity.UserVoucher, error)
 	ConsumeVoucher(*gorm.DB, int) error
 	UnconsumeVoucher(*gorm.DB, int) error
@@ -31,6 +32,16 @@ func NewUserVoucherRepository(cfg *UserVoucherRConfig) UserVoucherRepository {
 		db:          cfg.DB,
 		voucherRepo: cfg.VoucherRepo,
 	}
+}
+
+func (r *userVoucherRepositoryImpl) FindAll(userId int) ([]entity.UserVoucher, error) {
+	var userVouchers []entity.UserVoucher
+	err := r.db.Where("user_id = ?", userId).Where("is_consumed = ?", false).Joins("Voucher").Order("expiry_date > now() desc, expiry_date asc").Find(&userVouchers).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return userVouchers, nil
 }
 
 func (r *userVoucherRepositoryImpl) FindValidByCode(code string, userId int) (*entity.UserVoucher, error) {

@@ -6,6 +6,7 @@ import (
 )
 
 type UserVoucherUsecase interface {
+	GetUserVouchers(int) ([]entity.UserVoucher, error)
 	FindValidByCode(string, int) (*entity.UserVoucher, error)
 }
 
@@ -21,6 +22,10 @@ func NewUserVoucherUsecase(cfg *UserVoucherUConfig) UserVoucherUsecase {
 	return &userVoucherUsecaseImpl{
 		userVoucherRepo: cfg.UserVoucherRepo,
 	}
+}
+
+func (u *userVoucherUsecaseImpl) GetUserVouchers(userId int) ([]entity.UserVoucher, error) {
+	return u.userVoucherRepo.FindAll(userId)
 }
 
 func (u *userVoucherUsecaseImpl) FindValidByCode(code string, userId int) (*entity.UserVoucher, error) {
