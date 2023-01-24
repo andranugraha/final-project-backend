@@ -12,19 +12,23 @@ import (
 type UserVoucherRepository interface {
 	FindValidByCode(string, int) (*entity.UserVoucher, error)
 	ConsumeVoucher(*gorm.DB, int) error
+	Insert(*gorm.DB, int64, int) (*entity.UserVoucher, error)
 }
 
 type userVoucherRepositoryImpl struct {
-	db *gorm.DB
+	db          *gorm.DB
+	voucherRepo VoucherRepository
 }
 
 type UserVoucherRConfig struct {
-	DB *gorm.DB
+	DB          *gorm.DB
+	VoucherRepo VoucherRepository
 }
 
 func NewUserVoucherRepository(cfg *UserVoucherRConfig) UserVoucherRepository {
 	return &userVoucherRepositoryImpl{
-		db: cfg.DB,
+		db:          cfg.DB,
+		voucherRepo: cfg.VoucherRepo,
 	}
 }
 
@@ -47,4 +51,28 @@ func (r *userVoucherRepositoryImpl) ConsumeVoucher(tx *gorm.DB, id int) error {
 		return err
 	}
 	return nil
+}
+
+func (r *userVoucherRepositoryImpl) Insert(tx *gorm.DB, amount int64, userId int) (*entity.UserVoucher, error) {
+	voucher, err := r.voucherRepo.FindValidByAmount(amount)
+	if err != nil {
+		return nil, err
+	}
+
+	if voucher == nil {
+		return nil, nil
+	}
+
+	userVoucher := entity.UserVoucher{
+		UserId:     userId,
+		VoucherId:  voucher.ID,
+		ExpiryDate: time.Now().AddDate(0, 1, 0),
+	}
+
+	err = tx.Create(&userVoucher).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &userVoucher, nil
 }

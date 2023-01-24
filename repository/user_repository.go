@@ -12,26 +12,33 @@ import (
 )
 
 type UserRepository interface {
-	GetById(int) (*entity.User, error)
-	GetByIdentifierAndRole(string, int) (*entity.User, error)
-	GetDetailById(int) (*entity.User, error)
+	FindById(int) (*entity.User, error)
+	FindByIdentifierAndRole(string, int) (*entity.User, error)
+	FindDetailById(int) (*entity.User, error)
+	FindByReferral(string) (*entity.User, error)
 	Insert(entity.User) (*entity.User, error)
 	UpdateDetail(entity.User) (*entity.User, error)
+	LevelUp(*gorm.DB, int, int64) (*entity.User, error)
 }
 
 type userRepositoryImpl struct {
-	db *gorm.DB
+	db        *gorm.DB
+	levelRepo LevelRepository
 }
 
 type UserRConfig struct {
-	DB *gorm.DB
+	DB        *gorm.DB
+	LevelRepo LevelRepository
 }
 
 func NewUserRepository(cfg *UserRConfig) UserRepository {
-	return &userRepositoryImpl{db: cfg.DB}
+	return &userRepositoryImpl{
+		db:        cfg.DB,
+		levelRepo: cfg.LevelRepo,
+	}
 }
 
-func (r *userRepositoryImpl) GetById(id int) (*entity.User, error) {
+func (r *userRepositoryImpl) FindById(id int) (*entity.User, error) {
 	var res *entity.User
 	err := r.db.First(&res, id)
 	if err.Error != nil {
@@ -44,7 +51,7 @@ func (r *userRepositoryImpl) GetById(id int) (*entity.User, error) {
 	return res, nil
 }
 
-func (r *userRepositoryImpl) GetByIdentifierAndRole(identifier string, roleId int) (*entity.User, error) {
+func (r *userRepositoryImpl) FindByIdentifierAndRole(identifier string, roleId int) (*entity.User, error) {
 	var res *entity.User
 	err := r.db.Where(
 		r.db.Where("email = ?", identifier).Or("username = ?", identifier),
@@ -59,9 +66,22 @@ func (r *userRepositoryImpl) GetByIdentifierAndRole(identifier string, roleId in
 	return res, nil
 }
 
-func (r *userRepositoryImpl) GetDetailById(id int) (*entity.User, error) {
+func (r *userRepositoryImpl) FindDetailById(id int) (*entity.User, error) {
 	var res *entity.User
 	err := r.db.Preload(clause.Associations).First(&res, id)
+	if err.Error != nil {
+		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
+			return nil, errResp.ErrUserNotFound
+		}
+		return nil, err.Error
+	}
+
+	return res, nil
+}
+
+func (r *userRepositoryImpl) FindByReferral(referral string) (*entity.User, error) {
+	var res *entity.User
+	err := r.db.Where("referral = ?", referral).First(&res)
 	if err.Error != nil {
 		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrUserNotFound
@@ -102,4 +122,25 @@ func (r *userRepositoryImpl) UpdateDetail(req entity.User) (*entity.User, error)
 	}
 
 	return &req, res.Error
+}
+
+func (r *userRepositoryImpl) LevelUp(tx *gorm.DB, id int, totalTransaction int64) (*entity.User, error) {
+	user, err := r.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	level, err := r.levelRepo.FindValidByTotalTransaction(totalTransaction)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.LevelId != level.ID {
+		err = tx.Model(&user).Update("level_id", level.ID).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return user, nil
 }

@@ -12,8 +12,13 @@ import (
 )
 
 func createRouter() *gin.Engine {
-	userRepo := repository.NewUserRepository(&repository.UserRConfig{
+	levelRepo := repository.NewLevelRepository(&repository.LevelRConfig{
 		DB: db.Get(),
+	})
+
+	userRepo := repository.NewUserRepository(&repository.UserRConfig{
+		DB:        db.Get(),
+		LevelRepo: levelRepo,
 	})
 	authUsecase := usecase.NewAuthUsecase(&usecase.AuthUConfig{
 		UserRepo:      userRepo,
@@ -42,16 +47,26 @@ func createRouter() *gin.Engine {
 		FavoriteRepo: favoriteRepo,
 	})
 
+	transactionRepo := repository.NewTransactionRepository(&repository.TransactionRConfig{
+		DB: db.Get(),
+	})
+
 	cartRepo := repository.NewCartRepository(&repository.CartRConfig{
 		DB: db.Get(),
 	})
 	cartUsecase := usecase.NewCartUsecase(&usecase.CartUConfig{
-		CartRepo:   cartRepo,
-		CourseRepo: courseRepo,
+		CartRepo:        cartRepo,
+		CourseRepo:      courseRepo,
+		TransactionRepo: transactionRepo,
+	})
+
+	voucherRepo := repository.NewVoucherRepository(&repository.VoucherRConfig{
+		DB: db.Get(),
 	})
 
 	userVoucherRepo := repository.NewUserVoucherRepository(&repository.UserVoucherRConfig{
-		DB: db.Get(),
+		DB:          db.Get(),
+		VoucherRepo: voucherRepo,
 	})
 	UserVoucherUsecase := usecase.NewUserVoucherUsecase(&usecase.UserVoucherUConfig{
 		UserVoucherRepo: userVoucherRepo,
@@ -66,6 +81,7 @@ func createRouter() *gin.Engine {
 		CartRepo:        cartRepo,
 		UserVoucherRepo: userVoucherRepo,
 		UserCourseRepo:  userCourseRepo,
+		UserRepo:        userRepo,
 	})
 	invoiceUsecase := usecase.NewInvoiceUsecase(&usecase.InvoiceUConfig{
 		InvoiceRepo:        invoiceRepo,

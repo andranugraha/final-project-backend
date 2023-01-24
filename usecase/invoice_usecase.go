@@ -6,6 +6,7 @@ import (
 	"final-project-backend/repository"
 	"final-project-backend/utils/constant"
 	errResp "final-project-backend/utils/errors"
+	"time"
 )
 
 type InvoiceUsecase interface {
@@ -82,7 +83,6 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 		UserVoucherId: userVoucher.ID,
 		VoucherId:     userVoucher.VoucherId,
 		Voucher:       &userVoucher.Voucher,
-		Discount:      user.Level.Discount,
 	}
 
 	var subtotal float64
@@ -94,7 +94,8 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 	}
 
 	invoice.Subtotal = subtotal
-	invoice.Total = subtotal - invoice.Discount - userVoucher.Voucher.Amount
+	invoice.Total = (subtotal - userVoucher.Voucher.Amount) * user.Level.Discount
+	invoice.Discount = invoice.Subtotal - invoice.Total
 
 	return u.invoiceRepo.Insert(invoice)
 }
@@ -114,6 +115,8 @@ func (u *invoiceUsecaseImpl) PayInvoice(userId int, invoiceId string) (*entity.I
 	}
 
 	invoice.Status = constant.InvoiceStatusWaitingConfirmation
+	now := time.Now()
+	invoice.PaymentDate = &now
 
 	return u.invoiceRepo.Update(*invoice)
 }

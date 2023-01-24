@@ -7,5 +7,6 @@ type Voucher struct {
 	Name       string  `json:"name"`
 	Amount     float64 `json:"amount"`
 	Code       string  `json:"code"`
+	MinAmount  float64 `json:"minAmount"`
 	gorm.Model `json:"-"`
 }

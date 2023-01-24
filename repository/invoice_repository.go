@@ -22,6 +22,7 @@ type invoiceRepositoryImpl struct {
 	cartRepo        CartRepository
 	userVoucherRepo UserVoucherRepository
 	userCourseRepo  UserCourseRepository
+	userRepo        UserRepository
 }
 
 type InvoiceRConfig struct {
@@ -29,6 +30,7 @@ type InvoiceRConfig struct {
 	CartRepo        CartRepository
 	UserVoucherRepo UserVoucherRepository
 	UserCourseRepo  UserCourseRepository
+	UserRepo        UserRepository
 }
 
 func NewInvoiceRepository(cfg *InvoiceRConfig) InvoiceRepository {
@@ -37,6 +39,7 @@ func NewInvoiceRepository(cfg *InvoiceRConfig) InvoiceRepository {
 		cartRepo:        cfg.CartRepo,
 		userVoucherRepo: cfg.UserVoucherRepo,
 		userCourseRepo:  cfg.UserCourseRepo,
+		userRepo:        cfg.UserRepo,
 	}
 }
 
@@ -133,6 +136,33 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 		if err != nil {
 			tx.Rollback()
 			return nil, err
+		}
+
+		var totalTransaction int64
+		err = tx.Model(&entity.Invoice{}).Where("user_id = ?", invoice.UserId).Where("status = ?", constant.InvoiceStatusCompleted).Count(&totalTransaction).Error
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		user, err := r.userRepo.LevelUp(tx, invoice.UserId, totalTransaction)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		if user.RefReferral != nil && *user.RefReferral != "" {
+			referrer, err := r.userRepo.FindByReferral(*user.RefReferral)
+			if err != nil {
+				tx.Rollback()
+				return nil, err
+			}
+
+			_, err = r.userVoucherRepo.Insert(tx, int64(invoice.Total), referrer.ID)
+			if err != nil {
+				tx.Rollback()
+				return nil, err
+			}
 		}
 	}
 

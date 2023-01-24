@@ -48,7 +48,7 @@ func (u *authUsecaseImpl) SignUp(req dto.SignUpRequest) (*dto.SignUpResponse, er
 }
 
 func (u *authUsecaseImpl) SignIn(req dto.SignInRequest, roleId int) (*dto.SignInResponse, error) {
-	user, err := u.userRepo.GetByIdentifierAndRole(req.Identifier, roleId)
+	user, err := u.userRepo.FindByIdentifierAndRole(req.Identifier, roleId)
 	if err != nil {
 		return nil, err
 	}

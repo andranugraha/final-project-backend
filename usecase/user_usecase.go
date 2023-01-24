@@ -26,7 +26,7 @@ func NewUserUsecase(cfg *UserUConfig) UserUsecase {
 }
 
 func (u *userUsecaseImpl) GetUserDetail(userId int) (*entity.User, error) {
-	return u.userRepo.GetDetailById(userId)
+	return u.userRepo.FindDetailById(userId)
 }
 
 func (u *userUsecaseImpl) UpdateUserDetail(userId int, req dto.UpdateUserDetailRequest) (*entity.User, error) {

@@ -101,15 +101,21 @@ func (h *Handler) PayInvoice(c *gin.Context) {
 
 func (h *Handler) ConfirmInvoice(c *gin.Context) {
 	invoiceId := c.Param("invoiceId")
-	action := c.Query("action")
 
-	if action != "confirm" && action != "reject" {
+	var req dto.ConfirmInvoiceRequest
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		return
+	}
+
+	if req.ApprovalType != "confirm" && req.ApprovalType != "reject" {
 		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidInvoiceAction.Error())
 		return
 	}
 
 	var status string
-	switch action {
+	switch req.ApprovalType {
 	case "confirm":
 		status = constant.InvoiceStatusCompleted
 	case "reject":

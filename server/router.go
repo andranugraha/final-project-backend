@@ -98,8 +98,10 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 			userInvoice := invoice.Group("/", middleware.User)
 			{
 				userInvoice.POST("/", h.Checkout)
-				userInvoice.POST("/:invoiceId", h.PayInvoice)
+				userInvoice.POST("/:invoiceId/pay", h.PayInvoice)
 			}
+
+			invoice.POST("/:invoiceId/confirm", middleware.Admin, h.ConfirmInvoice)
 		}
 	}
 

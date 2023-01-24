@@ -35,6 +35,7 @@ var (
 	ErrInvoiceAlreadyPaid                     = errors.New("invoice already paid")
 	ErrInvoiceStatusNotWaitingForConfirmation = errors.New("invoice status is not waiting for confirmation")
 	ErrInvalidInvoiceAction                   = errors.New("invalid invoice action")
+	ErrCourseAlreadyBought                    = errors.New("course already bought")
 
 	ErrWrongPassword         = errors.New("password mismatch")
 	ErrForbidden             = errors.New("forbidden access to resources")

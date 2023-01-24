@@ -4,6 +4,7 @@ import (
 	"final-project-backend/dto"
 	"final-project-backend/entity"
 	"final-project-backend/repository"
+	errResp "final-project-backend/utils/errors"
 )
 
 type CartUsecase interface {
@@ -13,19 +14,22 @@ type CartUsecase interface {
 }
 
 type cartUsecaseImpl struct {
-	cartRepo   repository.CartRepository
-	courseRepo repository.CourseRepository
+	cartRepo        repository.CartRepository
+	courseRepo      repository.CourseRepository
+	transactionRepo repository.TransactionRepository
 }
 
 type CartUConfig struct {
-	CartRepo   repository.CartRepository
-	CourseRepo repository.CourseRepository
+	CartRepo        repository.CartRepository
+	CourseRepo      repository.CourseRepository
+	TransactionRepo repository.TransactionRepository
 }
 
 func NewCartUsecase(cfg *CartUConfig) CartUsecase {
 	return &cartUsecaseImpl{
-		cartRepo:   cfg.CartRepo,
-		courseRepo: cfg.CourseRepo,
+		cartRepo:        cfg.CartRepo,
+		courseRepo:      cfg.CourseRepo,
+		transactionRepo: cfg.TransactionRepo,
 	}
 }
 
@@ -45,6 +49,15 @@ func (u *cartUsecaseImpl) AddToCart(userId, courseId int) error {
 	_, err := u.courseRepo.FindPublishedById(courseId)
 	if err != nil {
 		return err
+	}
+
+	transaction, err := u.transactionRepo.FindBoughtByUserIdAndCourseId(userId, courseId)
+	if err != nil {
+		return err
+	}
+
+	if transaction != nil {
+		return errResp.ErrCourseAlreadyBought
 	}
 
 	cart := entity.Cart{

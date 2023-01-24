@@ -44,7 +44,7 @@ func (r *cartRepositoryImpl) Insert(cart entity.Cart) error {
 	if err != nil {
 		if pgError := err.(*pgconn.PgError); errors.Is(err, pgError) {
 			if pgError.Code == errResp.ErrSqlUniqueViolation {
-				err = errResp.ErrDuplicateFavorite
+				err = errResp.ErrDuplicateCart
 			}
 		}
 		return err

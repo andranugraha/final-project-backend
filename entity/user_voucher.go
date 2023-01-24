@@ -1,6 +1,10 @@
 package entity
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type UserVoucher struct {
 	ID         int
@@ -8,7 +12,7 @@ type UserVoucher struct {
 	User       User `gorm:"foreignKey:UserId"`
 	VoucherId  int
 	Voucher    Voucher `gorm:"foreignKey:VoucherId"`
-	ExpiryDate string
+	ExpiryDate time.Time
 	IsConsumed bool
 	gorm.Model
 }
