@@ -124,49 +124,67 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 	}
 
 	if invoice.Status == constant.InvoiceStatusCompleted {
-		var userCourses []*entity.UserCourse
-		for _, transaction := range invoice.Transactions {
-			userCourses = append(userCourses, &entity.UserCourse{
-				UserId:   invoice.UserId,
-				CourseId: transaction.CourseId,
-			})
-		}
-
-		_, err = r.userCourseRepo.Insert(tx, userCourses)
+		err = r.CompleteInvoice(tx, &invoice)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
 		}
+	}
 
-		var totalTransaction int64
-		err = tx.Model(&entity.Invoice{}).Where("user_id = ?", invoice.UserId).Where("status = ?", constant.InvoiceStatusCompleted).Count(&totalTransaction).Error
+	if invoice.Status == constant.InvoiceStatusCancelled {
+		err = r.userVoucherRepo.UnconsumeVoucher(tx, invoice.UserVoucherId)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
-		}
-
-		user, err := r.userRepo.LevelUp(tx, invoice.UserId, totalTransaction)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-
-		if user.RefReferral != nil && *user.RefReferral != "" {
-			referrer, err := r.userRepo.FindByReferral(*user.RefReferral)
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
-
-			_, err = r.userVoucherRepo.Insert(tx, int64(invoice.Total), referrer.ID)
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
 		}
 	}
 
 	tx.Commit()
 
 	return &invoice, nil
+}
+
+func (r *invoiceRepositoryImpl) CompleteInvoice(tx *gorm.DB, invoice *entity.Invoice) error {
+	var userCourses []*entity.UserCourse
+	for _, transaction := range invoice.Transactions {
+		userCourses = append(userCourses, &entity.UserCourse{
+			UserId:   invoice.UserId,
+			CourseId: transaction.CourseId,
+		})
+	}
+
+	_, err := r.userCourseRepo.Insert(tx, userCourses)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var totalTransaction int64
+	err = tx.Model(&entity.Invoice{}).Where("user_id = ?", invoice.UserId).Where("status = ?", constant.InvoiceStatusCompleted).Count(&totalTransaction).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	user, err := r.userRepo.LevelUp(tx, invoice.UserId, totalTransaction)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if user.RefReferral != nil && *user.RefReferral != "" {
+		referrer, err := r.userRepo.FindByReferral(*user.RefReferral)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		_, err = r.userVoucherRepo.Insert(tx, int64(invoice.Total), referrer.ID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return nil
 }

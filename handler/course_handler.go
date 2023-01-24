@@ -115,3 +115,20 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 
 	response.SendSuccess(c, http.StatusOK, nil)
 }
+
+func (h *Handler) CompleteCourse(c *gin.Context) {
+	userId := c.GetInt("userId")
+	slug := c.Param("slug")
+	err := h.courseUsecase.CompleteCourse(userId, slug)
+	if err != nil {
+		if errors.Is(err, errResp.ErrCourseNotFound) {
+			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
+			return
+		}
+
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
+		return
+	}
+
+	response.SendSuccess(c, http.StatusOK, nil)
+}

@@ -12,6 +12,7 @@ import (
 type UserVoucherRepository interface {
 	FindValidByCode(string, int) (*entity.UserVoucher, error)
 	ConsumeVoucher(*gorm.DB, int) error
+	UnconsumeVoucher(*gorm.DB, int) error
 	Insert(*gorm.DB, int64, int) (*entity.UserVoucher, error)
 }
 
@@ -47,6 +48,14 @@ func (r *userVoucherRepositoryImpl) FindValidByCode(code string, userId int) (*e
 
 func (r *userVoucherRepositoryImpl) ConsumeVoucher(tx *gorm.DB, id int) error {
 	err := tx.Model(&entity.UserVoucher{}).Where("id = ?", id).Update("is_consumed", true).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userVoucherRepositoryImpl) UnconsumeVoucher(tx *gorm.DB, id int) error {
+	err := tx.Model(&entity.UserVoucher{}).Where("id = ?", id).Update("is_consumed", false).Error
 	if err != nil {
 		return err
 	}

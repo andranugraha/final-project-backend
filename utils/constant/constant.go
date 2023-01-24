@@ -15,11 +15,15 @@ const (
 	DraftStatus   = "draft"
 	PublishStatus = "publish"
 
-	//Invoice
+	// Invoice
 	InvoiceStatusWaitingPayment      = "waiting_payment"
 	InvoiceStatusWaitingConfirmation = "waiting_confirmation"
 	InvoiceStatusCompleted           = "completed"
 	InvoiceStatusCancelled           = "cancelled"
+
+	// Course
+	CourseStatusInProgress = "in_progress"
+	CourseStatusCompleted  = "completed"
 )
 
 var (

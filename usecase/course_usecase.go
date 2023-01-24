@@ -4,6 +4,8 @@ import (
 	"final-project-backend/dto"
 	"final-project-backend/entity"
 	"final-project-backend/repository"
+	"final-project-backend/utils/constant"
+	errResp "final-project-backend/utils/errors"
 	"final-project-backend/utils/storage"
 	"strings"
 )
@@ -14,19 +16,23 @@ type CourseUsecase interface {
 	GetCourses(entity.CourseParams) ([]entity.Course, int64, int, error)
 	UpdateCourse(string, dto.UpdateCourseRequest) (*entity.Course, error)
 	DeleteCourse(string) error
+	CompleteCourse(int, string) error
 }
 
 type courseUsecaseImpl struct {
-	courseRepo repository.CourseRepository
+	courseRepo     repository.CourseRepository
+	userCourseRepo repository.UserCourseRepository
 }
 
 type CourseUConfig struct {
-	CourseRepo repository.CourseRepository
+	CourseRepo     repository.CourseRepository
+	UserCourseRepo repository.UserCourseRepository
 }
 
 func NewCourseUsecase(cfg *CourseUConfig) CourseUsecase {
 	return &courseUsecaseImpl{
-		courseRepo: cfg.CourseRepo,
+		courseRepo:     cfg.CourseRepo,
+		userCourseRepo: cfg.UserCourseRepo,
 	}
 }
 
@@ -125,6 +131,29 @@ func (u *courseUsecaseImpl) UpdateCourse(slug string, req dto.UpdateCourseReques
 
 func (u *courseUsecaseImpl) DeleteCourse(slug string) error {
 	err := u.courseRepo.Delete(slug)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *courseUsecaseImpl) CompleteCourse(userId int, slug string) error {
+	course, err := u.courseRepo.FindBySlug(slug)
+	if err != nil {
+		return err
+	}
+
+	userCourse, err := u.userCourseRepo.FindByUserIdAndCourseId(userId, course.ID)
+	if err != nil {
+		return err
+	}
+
+	if userCourse.Status == constant.CourseStatusCompleted {
+		return errResp.ErrCourseAlreadyCompleted
+	}
+
+	_, err = u.userCourseRepo.Complete(*userCourse)
 	if err != nil {
 		return err
 	}
