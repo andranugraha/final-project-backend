@@ -14,6 +14,7 @@ type CourseUsecase interface {
 	CreateCourse(dto.CreateCourseRequest) (*entity.Course, error)
 	GetCourse(string) (*entity.Course, error)
 	GetCourses(entity.CourseParams) ([]entity.Course, int64, int, error)
+	GetTrendingCourses() ([]entity.Course, error)
 	UpdateCourse(string, dto.UpdateCourseRequest) (*entity.Course, error)
 	DeleteCourse(string) error
 	CompleteCourse(int, string) error
@@ -47,6 +48,10 @@ func (u *courseUsecaseImpl) GetCourse(slug string) (*entity.Course, error) {
 
 func (u *courseUsecaseImpl) GetCourses(params entity.CourseParams) ([]entity.Course, int64, int, error) {
 	return u.courseRepo.FindAll(params)
+}
+
+func (u *courseUsecaseImpl) GetTrendingCourses() ([]entity.Course, error) {
+	return u.courseRepo.FindTrending()
 }
 
 func (u *courseUsecaseImpl) CreateCourse(req dto.CreateCourseRequest) (*entity.Course, error) {

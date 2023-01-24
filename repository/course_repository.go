@@ -17,6 +17,7 @@ type CourseRepository interface {
 	FindBySlug(string) (*entity.Course, error)
 	FindAll(entity.CourseParams) ([]entity.Course, int64, int, error)
 	FindPublishedById(int) (*entity.Course, error)
+	FindTrending() ([]entity.Course, error)
 	Update(entity.Course) (*entity.Course, error)
 	Delete(string) error
 }
@@ -89,6 +90,23 @@ func (r *courseRepositoryImpl) FindAll(params entity.CourseParams) ([]entity.Cou
 	}
 
 	return courses, count, totalPages, nil
+}
+
+func (r *courseRepositoryImpl) FindTrending() ([]entity.Course, error) {
+	var courses []entity.Course
+	defaultLimit := 5
+
+	err := r.db.Preload(clause.Associations).
+		Joins("left join transactions t ON courses.id = t.course_id and EXTRACT(week FROM t.created_at) = EXTRACT(week FROM NOW())").
+		Joins("left join invoices i on t.invoice_id = i.id and i.status = ?", constant.CourseStatusCompleted).
+		Where("courses.status = ?", constant.PublishStatus).
+		Group("courses.id").
+		Order("count(t.id) DESC").Limit(defaultLimit).Find(&courses).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return courses, nil
 }
 
 func (r *courseRepositoryImpl) FindBySlug(slug string) (*entity.Course, error) {

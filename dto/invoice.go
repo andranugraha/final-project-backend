@@ -1,7 +1,7 @@
 package dto
 
 type CheckoutRequest struct {
-	VoucherCode string `json:"voucherCode" binding:"required"`
+	VoucherCode string `json:"voucherCode"`
 }
 
 type ConfirmInvoiceRequest struct {

@@ -72,17 +72,9 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 		return nil, err
 	}
 
-	userVoucher, err := u.userVoucherUsecase.FindValidByCode(req.VoucherCode, userId)
-	if err != nil {
-		return nil, err
-	}
-
 	invoice := entity.Invoice{
-		UserId:        userId,
-		Status:        constant.InvoiceStatusWaitingPayment,
-		UserVoucherId: userVoucher.ID,
-		VoucherId:     userVoucher.VoucherId,
-		Voucher:       &userVoucher.Voucher,
+		UserId: userId,
+		Status: constant.InvoiceStatusWaitingPayment,
 	}
 
 	var subtotal float64
@@ -94,8 +86,27 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 	}
 
 	invoice.Subtotal = subtotal
-	invoice.Total = (subtotal - userVoucher.Voucher.Amount) * user.Level.Discount
-	invoice.Discount = invoice.Subtotal - invoice.Total
+	total := subtotal
+	if req.VoucherCode != "" {
+		userVoucher, err := u.userVoucherUsecase.FindValidByCode(req.VoucherCode, userId)
+		if err != nil {
+			return nil, err
+		}
+
+		invoice.UserVoucherId = &userVoucher.ID
+		invoice.VoucherId = &userVoucher.VoucherId
+		invoice.Voucher = &userVoucher.Voucher
+
+		total -= userVoucher.Voucher.Amount
+	}
+
+	if user.Level.Discount > 0 {
+		discount := total * user.Level.Discount
+		total = total - discount
+		invoice.Discount = discount
+	}
+
+	invoice.Total = total
 
 	return u.invoiceRepo.Insert(invoice)
 }

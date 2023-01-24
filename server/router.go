@@ -71,6 +71,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		course := v1.Group("/courses")
 		{
 			course.GET("/", h.GetCourses)
+			course.GET("/trending", h.GetTrendingCourses)
 			authenticatedCourse := course.Group("/", middleware.Authenticated)
 			{
 				authenticatedCourse.GET("/:slug", h.GetCourse)

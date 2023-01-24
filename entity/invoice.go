@@ -14,8 +14,8 @@ type Invoice struct {
 	User          *User          `json:"user,omitempty" gorm:"foreignKey:UserId"`
 	Status        string         `json:"status"`
 	PaymentDate   *time.Time     `json:"paymentDate,omitempty"`
-	UserVoucherId int            `json:"userVoucherId"`
-	VoucherId     int            `json:"voucherId"`
+	UserVoucherId *int           `json:"userVoucherId"`
+	VoucherId     *int           `json:"voucherId"`
 	Voucher       *Voucher       `json:"voucher,omitempty" gorm:"foreignKey:VoucherId"`
 	Discount      float64        `json:"discount"`
 	Subtotal      float64        `json:"subtotal"`

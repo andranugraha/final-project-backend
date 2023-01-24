@@ -94,10 +94,12 @@ func (r *invoiceRepositoryImpl) Insert(invoice entity.Invoice) (*entity.Invoice,
 		return nil, err
 	}
 
-	err = r.userVoucherRepo.ConsumeVoucher(tx, invoice.UserVoucherId)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
+	if invoice.UserVoucherId != nil {
+		err = r.userVoucherRepo.ConsumeVoucher(tx, *invoice.UserVoucherId)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
 	}
 
 	tx.Commit()
@@ -117,7 +119,7 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 		return nil, err
 	}
 
-	err := tx.Save(&invoice).Error
+	err := tx.Omit("Transactions").Save(&invoice).Error
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -131,8 +133,8 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 		}
 	}
 
-	if invoice.Status == constant.InvoiceStatusCancelled {
-		err = r.userVoucherRepo.UnconsumeVoucher(tx, invoice.UserVoucherId)
+	if invoice.Status == constant.InvoiceStatusCancelled && invoice.UserVoucherId != nil {
+		err = r.userVoucherRepo.UnconsumeVoucher(tx, *invoice.UserVoucherId)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -150,6 +152,7 @@ func (r *invoiceRepositoryImpl) CompleteInvoice(tx *gorm.DB, invoice *entity.Inv
 		userCourses = append(userCourses, &entity.UserCourse{
 			UserId:   invoice.UserId,
 			CourseId: transaction.CourseId,
+			Status:   constant.CourseStatusInProgress,
 		})
 	}
 

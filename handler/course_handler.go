@@ -33,6 +33,16 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 	response.SendSuccess(c, http.StatusOK, res)
 }
 
+func (h *Handler) GetTrendingCourses(c *gin.Context) {
+	res, err := h.courseUsecase.GetTrendingCourses()
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
+		return
+	}
+
+	response.SendSuccess(c, http.StatusOK, res)
+}
+
 func (h *Handler) GetCourses(c *gin.Context) {
 	roleId := c.GetInt("roleId")
 	categoryId, _ := strconv.Atoi(c.Query("categoryId"))
