@@ -24,6 +24,7 @@ type Invoice struct {
 }
 
 type InvoiceParams struct {
+	UserId int    `json:"userId"`
 	Status string `json:"status"`
 	Limit  int    `json:"limit"`
 	Page   int    `json:"page"`
@@ -32,9 +33,14 @@ type InvoiceParams struct {
 
 func (i *InvoiceParams) Scope() func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
+		if i.UserId != 0 {
+			db = db.Where("user_id = ?", i.UserId)
+		}
+
 		if i.Status != "" {
 			db = db.Where("status = ?", i.Status)
 		}
+
 		return db
 	}
 }
@@ -43,8 +49,14 @@ func (i *InvoiceParams) Offset() int {
 	return (i.Page - 1) * i.Limit
 }
 
-func NewInvoiceParams(status, sort string, limit, page int) InvoiceParams {
+func NewInvoiceParams(status, sort string, limit, page, userId, roleId int) InvoiceParams {
 	return InvoiceParams{
+		UserId: func() int {
+			if userId != 0 && roleId == constant.UserRoleId {
+				return userId
+			}
+			return 0
+		}(),
 		Status: func() string {
 			if status == constant.InvoiceStatusWaitingPayment || status == constant.InvoiceStatusWaitingConfirmation || status == constant.InvoiceStatusCompleted || status == constant.InvoiceStatusCancelled {
 				return status

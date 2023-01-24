@@ -11,7 +11,7 @@ import (
 
 type InvoiceRepository interface {
 	FindById(id int) (*entity.Invoice, error)
-	FindByUserId(userId int, params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
+	FindAll(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
 	Insert(invoice entity.Invoice) (*entity.Invoice, error)
 	Update(invoice entity.Invoice) (*entity.Invoice, error)
 }
@@ -48,11 +48,11 @@ func (r *invoiceRepositoryImpl) FindById(id int) (*entity.Invoice, error) {
 	return &invoice, nil
 }
 
-func (r *invoiceRepositoryImpl) FindByUserId(userId int, params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error) {
+func (r *invoiceRepositoryImpl) FindAll(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error) {
 	var invoices []*entity.Invoice
 	var count int64
 
-	db := r.db.Where("user_id = ?", userId).Scopes(params.Scope())
+	db := r.db.Scopes(params.Scope())
 	db.Model(&invoices).Count(&count)
 	totalPages := int(math.Ceil(float64(count) / float64(params.Limit)))
 

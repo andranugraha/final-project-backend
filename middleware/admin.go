@@ -3,7 +3,7 @@ package middleware
 import (
 	"final-project-backend/utils/constant"
 	"final-project-backend/utils/errors"
-	"final-project-backend/utils/response"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +11,10 @@ import (
 func Admin(c *gin.Context) {
 	roleId := c.GetInt("roleId")
 	if roleId != constant.AdminRoleId {
-		response.SendError(c, 403, errors.ErrCodeForbidden, errors.ErrForbidden.Error())
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"code":    errors.ErrCodeForbidden,
+			"message": errors.ErrForbidden.Error(),
+		})
 		return
 	}
 }

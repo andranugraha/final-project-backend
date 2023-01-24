@@ -14,12 +14,13 @@ import (
 
 func (h *Handler) GetInvoices(c *gin.Context) {
 	userId := c.GetInt("userId")
+	roleId := c.GetInt("roleId")
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
 
-	params := entity.NewInvoiceParams(c.Query("status"), c.Query("sort"), page, limit)
+	params := entity.NewInvoiceParams(c.Query("status"), c.Query("sort"), page, limit, userId, roleId)
 
-	invoices, totalRows, totalPages, err := h.invoiceUsecase.GetInvoices(userId, params)
+	invoices, totalRows, totalPages, err := h.invoiceUsecase.GetInvoices(params)
 	if err != nil {
 		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, err.Error())
 		return

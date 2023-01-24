@@ -9,7 +9,7 @@ import (
 )
 
 type InvoiceUsecase interface {
-	GetInvoices(userId int, params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
+	GetInvoices(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
 	Checkout(userId int, req dto.CheckoutRequest) (*entity.Invoice, error)
 	PayInvoice(userId int, invoiceId int) (*entity.Invoice, error)
 }
@@ -37,8 +37,8 @@ func NewInvoiceUsecase(cfg *InvoiceUConfig) InvoiceUsecase {
 	}
 }
 
-func (u *invoiceUsecaseImpl) GetInvoices(userId int, params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error) {
-	return u.invoiceRepo.FindByUserId(userId, params)
+func (u *invoiceUsecaseImpl) GetInvoices(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error) {
+	return u.invoiceRepo.FindAll(params)
 }
 
 func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*entity.Invoice, error) {
