@@ -1,14 +1,17 @@
 package entity
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type Transaction struct {
-	ID         int      `json:"id" gorm:"primaryKey"`
-	InvoiceId  int      `json:"invoiceId"`
-	Invoice    *Invoice `json:"invoice,omitempty" gorm:"foreignKey:InvoiceId"`
-	CourseId   int      `json:"courseId"`
-	Course     *Course  `json:"course,omitempty" gorm:"foreignKey:CourseId"`
-	Price      float64  `json:"price"`
+	ID         int       `json:"id" gorm:"primaryKey"`
+	InvoiceId  uuid.UUID `json:"invoiceId"`
+	Invoice    *Invoice  `json:"invoice,omitempty" gorm:"foreignKey:InvoiceId"`
+	CourseId   int       `json:"courseId"`
+	Course     *Course   `json:"course,omitempty" gorm:"foreignKey:CourseId"`
+	Price      float64   `json:"price"`
 	gorm.Model `json:"-"`
 }
 

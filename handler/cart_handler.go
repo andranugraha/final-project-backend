@@ -30,7 +30,7 @@ func (h *Handler) AddToCart(c *gin.Context) {
 	}
 	err = h.cartUsecase.AddToCart(userId, courseId)
 	if err != nil {
-		if errors.Is(err, errResp.ErrDuplicateCart) {
+		if errors.Is(err, errResp.ErrDuplicateCart) || errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 			return
 		}

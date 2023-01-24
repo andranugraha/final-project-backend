@@ -7,7 +7,7 @@ import (
 )
 
 type Favorite struct {
-	ID       int
+	ID       int       `gorm:"primaryKey"`
 	UserId   int       `gorm:"uniqueIndex:idx_favorite"`
 	User     User      `gorm:"foreignKey:UserId"`
 	CourseId int       `gorm:"uniqueIndex:idx_favorite"`

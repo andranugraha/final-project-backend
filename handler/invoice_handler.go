@@ -4,6 +4,7 @@ import (
 	"errors"
 	"final-project-backend/dto"
 	"final-project-backend/entity"
+	"final-project-backend/utils/constant"
 	errResp "final-project-backend/utils/errors"
 	"final-project-backend/utils/response"
 	"net/http"
@@ -27,6 +28,29 @@ func (h *Handler) GetInvoices(c *gin.Context) {
 	}
 
 	response.SendSuccessWithPagination(c, http.StatusOK, invoices, totalRows, totalPages)
+}
+
+func (h *Handler) GetInvoice(c *gin.Context) {
+	userId := c.GetInt("userId")
+	roleId := c.GetInt("roleId")
+	invoiceId := c.Param("invoiceId")
+
+	if roleId == constant.AdminRoleId {
+		userId = 0
+	}
+
+	invoice, err := h.invoiceUsecase.GetInvoiceDetail(userId, invoiceId)
+	if err != nil {
+		if errors.Is(err, errResp.ErrInvoiceNotFound) {
+			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
+			return
+		}
+
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, err.Error())
+		return
+	}
+
+	response.SendSuccess(c, http.StatusOK, invoice)
 }
 
 func (h *Handler) Checkout(c *gin.Context) {
@@ -54,7 +78,7 @@ func (h *Handler) Checkout(c *gin.Context) {
 
 func (h *Handler) PayInvoice(c *gin.Context) {
 	userId := c.GetInt("userId")
-	invoiceId, _ := strconv.Atoi(c.Param("invoiceId"))
+	invoiceId := c.Param("invoiceId")
 
 	invoice, err := h.invoiceUsecase.PayInvoice(userId, invoiceId)
 	if err != nil {
@@ -64,6 +88,42 @@ func (h *Handler) PayInvoice(c *gin.Context) {
 		}
 
 		if errors.Is(err, errResp.ErrInvoiceAlreadyPaid) {
+			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+			return
+		}
+
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, err.Error())
+		return
+	}
+
+	response.SendSuccess(c, http.StatusOK, invoice)
+}
+
+func (h *Handler) ConfirmInvoice(c *gin.Context) {
+	invoiceId := c.Param("invoiceId")
+	action := c.Query("action")
+
+	if action != "confirm" && action != "reject" {
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidInvoiceAction.Error())
+		return
+	}
+
+	var status string
+	switch action {
+	case "confirm":
+		status = constant.InvoiceStatusCompleted
+	case "reject":
+		status = constant.InvoiceStatusCancelled
+	}
+
+	invoice, err := h.invoiceUsecase.ConfirmInvoice(invoiceId, status)
+	if err != nil {
+		if errors.Is(err, errResp.ErrInvoiceNotFound) {
+			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
+			return
+		}
+
+		if errors.Is(err, errResp.ErrInvoiceStatusNotWaitingForConfirmation) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 			return
 		}

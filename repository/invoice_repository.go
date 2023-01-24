@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"final-project-backend/entity"
+	"final-project-backend/utils/constant"
 	errResp "final-project-backend/utils/errors"
 	"math"
 
@@ -10,7 +11,7 @@ import (
 )
 
 type InvoiceRepository interface {
-	FindById(id int) (*entity.Invoice, error)
+	FindById(id string) (*entity.Invoice, error)
 	FindAll(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
 	Insert(invoice entity.Invoice) (*entity.Invoice, error)
 	Update(invoice entity.Invoice) (*entity.Invoice, error)
@@ -20,12 +21,14 @@ type invoiceRepositoryImpl struct {
 	db              *gorm.DB
 	cartRepo        CartRepository
 	userVoucherRepo UserVoucherRepository
+	userCourseRepo  UserCourseRepository
 }
 
 type InvoiceRConfig struct {
 	DB              *gorm.DB
 	CartRepo        CartRepository
 	UserVoucherRepo UserVoucherRepository
+	UserCourseRepo  UserCourseRepository
 }
 
 func NewInvoiceRepository(cfg *InvoiceRConfig) InvoiceRepository {
@@ -33,12 +36,13 @@ func NewInvoiceRepository(cfg *InvoiceRConfig) InvoiceRepository {
 		db:              cfg.DB,
 		cartRepo:        cfg.CartRepo,
 		userVoucherRepo: cfg.UserVoucherRepo,
+		userCourseRepo:  cfg.UserCourseRepo,
 	}
 }
 
-func (r *invoiceRepositoryImpl) FindById(id int) (*entity.Invoice, error) {
+func (r *invoiceRepositoryImpl) FindById(id string) (*entity.Invoice, error) {
 	var invoice entity.Invoice
-	err := r.db.Preload("Transactions.Course").Preload("Voucher").First(&invoice, id).Error
+	err := r.db.Preload("Transactions.Course").Where("id = ?", id).Preload("Voucher").First(&invoice).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrInvoiceNotFound
@@ -114,6 +118,22 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 	if err != nil {
 		tx.Rollback()
 		return nil, err
+	}
+
+	if invoice.Status == constant.InvoiceStatusCompleted {
+		var userCourses []*entity.UserCourse
+		for _, transaction := range invoice.Transactions {
+			userCourses = append(userCourses, &entity.UserCourse{
+				UserId:   invoice.UserId,
+				CourseId: transaction.CourseId,
+			})
+		}
+
+		_, err = r.userCourseRepo.Insert(tx, userCourses)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
 	}
 
 	tx.Commit()

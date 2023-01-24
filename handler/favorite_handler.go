@@ -12,13 +12,26 @@ import (
 
 func (h *Handler) GetFavoriteCourses(c *gin.Context) {
 	userId := c.GetInt("userId")
-	courses, err := h.favoriteUsecase.GetFavoriteCourse(userId)
+	courses, err := h.favoriteUsecase.GetFavoriteCourses(userId)
 	if err != nil {
 		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
 		return
 	}
 
 	response.SendSuccess(c, http.StatusOK, courses)
+}
+
+func (h *Handler) CheckIsFavoriteCourse(c *gin.Context) {
+	userId := c.GetInt("userId")
+	courseId, err := strconv.Atoi(c.Param("courseId"))
+	if err != nil {
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		return
+	}
+
+	isFavorite := h.favoriteUsecase.CheckIsFavoriteCourse(userId, courseId)
+
+	response.SendSuccess(c, http.StatusOK, isFavorite)
 }
 
 func (h *Handler) SaveUnsaveFavoriteCourse(c *gin.Context) {

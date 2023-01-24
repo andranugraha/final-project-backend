@@ -13,16 +13,19 @@ type CartUsecase interface {
 }
 
 type cartUsecaseImpl struct {
-	cartRepo repository.CartRepository
+	cartRepo   repository.CartRepository
+	courseRepo repository.CourseRepository
 }
 
 type CartUConfig struct {
-	CartRepo repository.CartRepository
+	CartRepo   repository.CartRepository
+	CourseRepo repository.CourseRepository
 }
 
 func NewCartUsecase(cfg *CartUConfig) CartUsecase {
 	return &cartUsecaseImpl{
-		cartRepo: cfg.CartRepo,
+		cartRepo:   cfg.CartRepo,
+		courseRepo: cfg.CourseRepo,
 	}
 }
 
@@ -39,10 +42,16 @@ func (u *cartUsecaseImpl) GetCart(userId int) (*dto.GetCartResponse, error) {
 }
 
 func (u *cartUsecaseImpl) AddToCart(userId, courseId int) error {
+	_, err := u.courseRepo.FindPublishedById(courseId)
+	if err != nil {
+		return err
+	}
+
 	cart := entity.Cart{
 		UserId:   userId,
 		CourseId: courseId,
 	}
+
 	return u.cartRepo.Insert(cart)
 }
 

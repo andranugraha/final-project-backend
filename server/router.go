@@ -51,6 +51,11 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 					course.PUT("/:slug", h.UpdateCourse)
 					course.DELETE("/:slug", h.DeleteCourse)
 				}
+
+				invoice := authenticated.Group("/invoices")
+				{
+					invoice.POST("/:invoiceId/:action", h.ConfirmInvoice)
+				}
 			}
 		}
 
@@ -75,6 +80,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		favorite := v1.Group("/favorites", middleware.Authenticated)
 		{
 			favorite.GET("/", h.GetFavoriteCourses)
+			favorite.GET("/:courseId", h.CheckIsFavoriteCourse)
 			favorite.POST("/:courseId/:action", h.SaveUnsaveFavoriteCourse)
 		}
 
@@ -88,8 +94,12 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		invoice := v1.Group("/invoices", middleware.Authenticated)
 		{
 			invoice.GET("/", h.GetInvoices)
-			invoice.POST("/", h.Checkout)
-			invoice.POST("/:invoiceId", h.PayInvoice)
+			invoice.GET("/:invoiceId", h.GetInvoice)
+			userInvoice := invoice.Group("/", middleware.User)
+			{
+				userInvoice.POST("/", h.Checkout)
+				userInvoice.POST("/:invoiceId", h.PayInvoice)
+			}
 		}
 	}
 

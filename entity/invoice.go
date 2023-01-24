@@ -4,11 +4,12 @@ import (
 	"final-project-backend/utils/constant"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Invoice struct {
-	ID            int            `json:"id" gorm:"primaryKey"`
+	ID            uuid.UUID      `json:"id" gorm:"primaryKey,type:uuid;default:uuid_generate_v4()"`
 	UserId        int            `json:"userId"`
 	User          *User          `json:"user,omitempty" gorm:"foreignKey:UserId"`
 	Status        string         `json:"status"`
@@ -20,7 +21,9 @@ type Invoice struct {
 	Subtotal      float64        `json:"subtotal"`
 	Total         float64        `json:"total"`
 	Transactions  []*Transaction `json:"transactions,omitempty" gorm:"foreignKey:InvoiceId"`
-	gorm.Model    `json:"-"`
+	CreatedAt     time.Time      `json:"-"`
+	UpdatedAt     time.Time      `json:"-"`
+	DeletedAt     gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 type InvoiceParams struct {

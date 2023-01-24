@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"final-project-backend/entity"
+	"final-project-backend/utils/constant"
 	errResp "final-project-backend/utils/errors"
 	"math"
 
@@ -15,6 +16,7 @@ type CourseRepository interface {
 	Insert(entity.Course) (*entity.Course, error)
 	FindBySlug(string) (*entity.Course, error)
 	FindAll(entity.CourseParams) ([]entity.Course, int64, int, error)
+	FindPublishedById(int) (*entity.Course, error)
 	Update(entity.Course) (*entity.Course, error)
 	Delete(string) error
 }
@@ -93,6 +95,20 @@ func (r *courseRepositoryImpl) FindBySlug(slug string) (*entity.Course, error) {
 	var course *entity.Course
 
 	err := r.db.Preload(clause.Associations).Where("slug = ?", slug).First(&course).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errResp.ErrCourseNotFound
+		}
+		return nil, err
+	}
+
+	return course, nil
+}
+
+func (r *courseRepositoryImpl) FindPublishedById(id int) (*entity.Course, error) {
+	var course *entity.Course
+
+	err := r.db.Preload(clause.Associations).Where("status = ?", constant.PublishStatus).First(&course, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrCourseNotFound

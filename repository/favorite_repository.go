@@ -11,6 +11,7 @@ import (
 
 type FavoriteRepository interface {
 	FindByUserId(userId int) ([]*entity.Course, error)
+	FindByUserIdAndCourseId(userId, courseId int) (*entity.Favorite, error)
 	Insert(favorite entity.Favorite) error
 	Delete(favorite entity.Favorite) error
 }
@@ -37,6 +38,19 @@ func (r *favoriteRepositoryImpl) FindByUserId(userId int) ([]*entity.Course, err
 	}
 
 	return courses, nil
+}
+
+func (r *favoriteRepositoryImpl) FindByUserIdAndCourseId(userId, courseId int) (*entity.Favorite, error) {
+	var favorite entity.Favorite
+	err := r.db.Where("user_id = ?", userId).Where("course_id = ?", courseId).First(&favorite).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errResp.ErrFavoriteNotFound
+		}
+		return nil, err
+	}
+
+	return &favorite, nil
 }
 
 func (r *favoriteRepositoryImpl) Insert(favorite entity.Favorite) error {

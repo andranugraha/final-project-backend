@@ -10,8 +10,10 @@ import (
 
 type InvoiceUsecase interface {
 	GetInvoices(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
+	GetInvoiceDetail(userId int, invoiceId string) (*entity.Invoice, error)
 	Checkout(userId int, req dto.CheckoutRequest) (*entity.Invoice, error)
-	PayInvoice(userId int, invoiceId int) (*entity.Invoice, error)
+	PayInvoice(userId int, invoiceId string) (*entity.Invoice, error)
+	ConfirmInvoice(invoiceId, status string) (*entity.Invoice, error)
 }
 
 type invoiceUsecaseImpl struct {
@@ -39,6 +41,19 @@ func NewInvoiceUsecase(cfg *InvoiceUConfig) InvoiceUsecase {
 
 func (u *invoiceUsecaseImpl) GetInvoices(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error) {
 	return u.invoiceRepo.FindAll(params)
+}
+
+func (u *invoiceUsecaseImpl) GetInvoiceDetail(userId int, invoiceId string) (*entity.Invoice, error) {
+	invoice, err := u.invoiceRepo.FindById(invoiceId)
+	if err != nil {
+		return nil, err
+	}
+
+	if userId > 0 && invoice.UserId != userId {
+		return nil, errResp.ErrForbidden
+	}
+
+	return invoice, nil
 }
 
 func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*entity.Invoice, error) {
@@ -84,7 +99,7 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 	return u.invoiceRepo.Insert(invoice)
 }
 
-func (u *invoiceUsecaseImpl) PayInvoice(userId int, invoiceId int) (*entity.Invoice, error) {
+func (u *invoiceUsecaseImpl) PayInvoice(userId int, invoiceId string) (*entity.Invoice, error) {
 	invoice, err := u.invoiceRepo.FindById(invoiceId)
 	if err != nil {
 		return nil, err
@@ -99,6 +114,21 @@ func (u *invoiceUsecaseImpl) PayInvoice(userId int, invoiceId int) (*entity.Invo
 	}
 
 	invoice.Status = constant.InvoiceStatusWaitingConfirmation
+
+	return u.invoiceRepo.Update(*invoice)
+}
+
+func (u *invoiceUsecaseImpl) ConfirmInvoice(invoiceId, status string) (*entity.Invoice, error) {
+	invoice, err := u.invoiceRepo.FindById(invoiceId)
+	if err != nil {
+		return nil, err
+	}
+
+	if invoice.Status != constant.InvoiceStatusWaitingConfirmation {
+		return nil, errResp.ErrInvoiceStatusNotWaitingForConfirmation
+	}
+
+	invoice.Status = status
 
 	return u.invoiceRepo.Update(*invoice)
 }
