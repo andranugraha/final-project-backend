@@ -26,7 +26,7 @@ type Course struct {
 type CourseParams struct {
 	Keyword    string
 	CategoryId int
-	TagId      int
+	TagIds     []int
 	Sort       string
 	Limit      int
 	Page       int
@@ -41,9 +41,10 @@ func (c *CourseParams) Scope() func(db *gorm.DB) *gorm.DB {
 		if c.CategoryId > 0 {
 			db = db.Where("category_id = ?", c.CategoryId)
 		}
-		if c.TagId > 0 {
-			db = db.Joins("JOIN course_tags ON course_tags.course_id = courses.id").
-				Where("course_tags.tag_id = ?", c.TagId)
+		if len(c.TagIds) > 0 {
+			db = db.Joins("JOIN course_tags ON course_tags.course_id = courses.id AND course_tags.tag_id IN (?)", c.TagIds).
+				Group("courses.id").
+				Having("COUNT(course_tags.id) = ?", len(c.TagIds))
 		}
 		if c.Status != "" {
 			db = db.Where("status = ?", c.Status)
@@ -56,7 +57,7 @@ func (c *CourseParams) Offset() int {
 	return (c.Page - 1) * c.Limit
 }
 
-func NewCourseParams(s string, categoryId, tagId int, sort string, limit, page int, roleId int, status string) CourseParams {
+func NewCourseParams(s string, categoryId int, tagIds []int, sort string, limit, page int, roleId int, status string) CourseParams {
 	return CourseParams{
 		Keyword: s,
 		CategoryId: func() int {
@@ -65,12 +66,7 @@ func NewCourseParams(s string, categoryId, tagId int, sort string, limit, page i
 			}
 			return 0
 		}(),
-		TagId: func() int {
-			if tagId > 0 {
-				return tagId
-			}
-			return 0
-		}(),
+		TagIds: tagIds,
 		Sort: func() string {
 			if sort != "" && sort == "oldest" {
 				return "created_at ASC"

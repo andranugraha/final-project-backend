@@ -8,6 +8,7 @@ import (
 	"final-project-backend/utils/response"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,10 +36,16 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 func (h *Handler) GetCourses(c *gin.Context) {
 	roleId := c.GetInt("roleId")
 	categoryId, _ := strconv.Atoi(c.Query("categoryId"))
-	tagId, _ := strconv.Atoi(c.Query("tagId"))
+	splitTagIds := strings.Split(c.Query("tagIds"), ",")
+	var tagIds []int
+	for _, tagId := range splitTagIds {
+		id, _ := strconv.Atoi(tagId)
+		tagIds = append(tagIds, id)
+	}
+
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	page, _ := strconv.Atoi(c.Query("page"))
-	params := entity.NewCourseParams(c.Query("title"), categoryId, tagId, c.Query("sort"), limit, page, roleId, c.Query("status"))
+	params := entity.NewCourseParams(c.Query("title"), categoryId, tagIds, c.Query("sort"), limit, page, roleId, c.Query("status"))
 
 	res, totalRows, totalPages, err := h.courseUsecase.GetCourses(params)
 	if err != nil {

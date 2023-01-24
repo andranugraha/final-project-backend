@@ -89,7 +89,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		{
 			invoice.GET("/", h.GetInvoices)
 			invoice.POST("/", h.Checkout)
-			invoice.POST("/:invoiceId/pay", h.PayInvoice)
+			invoice.POST("/:invoiceId", h.PayInvoice)
 		}
 	}
 
