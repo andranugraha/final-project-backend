@@ -12,6 +12,13 @@ import (
 )
 
 func createRouter() *gin.Engine {
+	categoryRepo := repository.NewCategoryRepository(&repository.CategoryRConfig{
+		DB: db.Get(),
+	})
+	categoryUsecase := usecase.NewCategoryUsecase(&usecase.CategoryUConfig{
+		CategoryRepo: categoryRepo,
+	})
+
 	levelRepo := repository.NewLevelRepository(&repository.LevelRConfig{
 		DB: db.Get(),
 	})
@@ -98,6 +105,7 @@ func createRouter() *gin.Engine {
 		CartUsecase:        cartUsecase,
 		InvoiceUsecase:     invoiceUsecase,
 		UserVoucherUsecase: UserVoucherUsecase,
+		CategoryUsecase:    categoryUsecase,
 	})
 }
 

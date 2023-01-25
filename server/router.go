@@ -19,6 +19,7 @@ type RouterConfig struct {
 	CartUsecase        usecase.CartUsecase
 	InvoiceUsecase     usecase.InvoiceUsecase
 	UserVoucherUsecase usecase.UserVoucherUsecase
+	CategoryUsecase    usecase.CategoryUsecase
 }
 
 func NewRouter(cfg *RouterConfig) *gin.Engine {
@@ -31,6 +32,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		CartUsecase:        cfg.CartUsecase,
 		InvoiceUsecase:     cfg.InvoiceUsecase,
 		UserVoucherUsecase: cfg.UserVoucherUsecase,
+		CategoryUsecase:    cfg.CategoryUsecase,
 	})
 
 	router.Static("/docs", "swagger-ui")
@@ -110,6 +112,11 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 		voucher := v1.Group("/vouchers", middleware.Authenticated, middleware.User)
 		{
 			voucher.GET("/", h.GetUserVouchers)
+		}
+
+		category := v1.Group("/categories")
+		{
+			category.GET("/", h.GetCategories)
 		}
 	}
 

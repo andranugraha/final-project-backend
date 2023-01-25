@@ -10,6 +10,7 @@ type Handler struct {
 	cartUsecase        usecase.CartUsecase
 	invoiceUsecase     usecase.InvoiceUsecase
 	userVoucherUsecase usecase.UserVoucherUsecase
+	categoryUsecase    usecase.CategoryUsecase
 }
 
 type Config struct {
@@ -20,6 +21,7 @@ type Config struct {
 	CartUsecase        usecase.CartUsecase
 	InvoiceUsecase     usecase.InvoiceUsecase
 	UserVoucherUsecase usecase.UserVoucherUsecase
+	CategoryUsecase    usecase.CategoryUsecase
 }
 
 func New(cfg *Config) *Handler {
@@ -31,5 +33,6 @@ func New(cfg *Config) *Handler {
 		cartUsecase:        cfg.CartUsecase,
 		invoiceUsecase:     cfg.InvoiceUsecase,
 		userVoucherUsecase: cfg.UserVoucherUsecase,
+		categoryUsecase:    cfg.CategoryUsecase,
 	}
 }

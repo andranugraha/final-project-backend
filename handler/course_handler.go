@@ -20,7 +20,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 		return
 	}
 
-	res, err := h.courseUsecase.CreateCourse(req)
+	course, err := h.courseUsecase.CreateCourse(req)
 	if err != nil {
 		if errors.Is(err, errResp.ErrDuplicateTitle) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeDuplicate, err.Error())
@@ -30,17 +30,17 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, res)
+	response.SendSuccess(c, http.StatusOK, course)
 }
 
 func (h *Handler) GetTrendingCourses(c *gin.Context) {
-	res, err := h.courseUsecase.GetTrendingCourses()
+	courses, err := h.courseUsecase.GetTrendingCourses()
 	if err != nil {
 		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, res)
+	response.SendSuccess(c, http.StatusOK, courses)
 }
 
 func (h *Handler) GetCourses(c *gin.Context) {
@@ -57,19 +57,19 @@ func (h *Handler) GetCourses(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	params := entity.NewCourseParams(c.Query("title"), categoryId, tagIds, c.Query("sort"), limit, page, roleId, c.Query("status"))
 
-	res, totalRows, totalPages, err := h.courseUsecase.GetCourses(params)
+	courses, totalRows, totalPages, err := h.courseUsecase.GetCourses(params)
 	if err != nil {
 		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
 		return
 	}
 
-	response.SendSuccessWithPagination(c, http.StatusOK, res, totalRows, totalPages)
+	response.SendSuccessWithPagination(c, http.StatusOK, courses, totalRows, totalPages)
 }
 
 func (h *Handler) GetCourse(c *gin.Context) {
 	slug := c.Param("slug")
 
-	res, err := h.courseUsecase.GetCourse(slug)
+	course, err := h.courseUsecase.GetCourse(slug)
 	if err != nil {
 		if errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
@@ -80,7 +80,7 @@ func (h *Handler) GetCourse(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, res)
+	response.SendSuccess(c, http.StatusOK, course)
 }
 
 func (h *Handler) UpdateCourse(c *gin.Context) {
@@ -91,7 +91,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 	}
 
 	slug := c.Param("slug")
-	res, err := h.courseUsecase.UpdateCourse(slug, req)
+	course, err := h.courseUsecase.UpdateCourse(slug, req)
 	if err != nil {
 		if errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
@@ -107,7 +107,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, res)
+	response.SendSuccess(c, http.StatusOK, course)
 }
 
 func (h *Handler) DeleteCourse(c *gin.Context) {

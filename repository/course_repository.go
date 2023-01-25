@@ -97,7 +97,7 @@ func (r *courseRepositoryImpl) FindTrending() ([]entity.Course, error) {
 	defaultLimit := 5
 
 	err := r.db.Preload(clause.Associations).
-		Joins("left join transactions t ON courses.id = t.course_id and EXTRACT(week FROM t.created_at) = EXTRACT(week FROM NOW())").
+		Joins("left join transactions t ON courses.id = t.course_id and t.created_at >= date_trunc('week', now())").
 		Joins("left join invoices i on t.invoice_id = i.id and i.status = ?", constant.CourseStatusCompleted).
 		Where("courses.status = ?", constant.PublishStatus).
 		Group("courses.id").
