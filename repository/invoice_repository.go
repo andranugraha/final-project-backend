@@ -63,7 +63,7 @@ func (r *invoiceRepositoryImpl) FindAll(params entity.InvoiceParams) ([]*entity.
 	db.Model(&invoices).Count(&count)
 	totalPages := int(math.Ceil(float64(count) / float64(params.Limit)))
 
-	err := db.Preload("Voucher").Preload("Transactions.Course").Order(params.Sort).Offset(params.Offset()).Limit(params.Limit).Find(&invoices).Error
+	err := db.Preload("Voucher").Preload("Transactions.Course").Preload("User").Order(params.Sort).Offset(params.Offset()).Limit(params.Limit).Find(&invoices).Error
 	if err != nil {
 		return nil, 0, 0, err
 	}
@@ -126,7 +126,7 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 	}
 
 	if invoice.Status == constant.InvoiceStatusCompleted {
-		err = r.CompleteInvoice(tx, &invoice)
+		err = r.completeInvoice(tx, &invoice)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -146,7 +146,7 @@ func (r *invoiceRepositoryImpl) Update(invoice entity.Invoice) (*entity.Invoice,
 	return &invoice, nil
 }
 
-func (r *invoiceRepositoryImpl) CompleteInvoice(tx *gorm.DB, invoice *entity.Invoice) error {
+func (r *invoiceRepositoryImpl) completeInvoice(tx *gorm.DB, invoice *entity.Invoice) error {
 	var userCourses []*entity.UserCourse
 	for _, transaction := range invoice.Transactions {
 		userCourses = append(userCourses, &entity.UserCourse{

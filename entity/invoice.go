@@ -21,7 +21,7 @@ type Invoice struct {
 	Subtotal      float64        `json:"subtotal"`
 	Total         float64        `json:"total"`
 	Transactions  []*Transaction `json:"transactions,omitempty" gorm:"foreignKey:InvoiceId"`
-	CreatedAt     time.Time      `json:"-"`
+	CreatedAt     time.Time      `json:"createdAt"`
 	UpdatedAt     time.Time      `json:"-"`
 	DeletedAt     gorm.DeletedAt `json:"-" gorm:"index"`
 }

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"final-project-backend/dto"
+	"final-project-backend/entity"
 	"final-project-backend/repository"
 	"final-project-backend/utils/auth"
 	"final-project-backend/utils/errors"
@@ -35,6 +36,7 @@ func (u *authUsecaseImpl) SignUp(req dto.SignUpRequest) (*dto.SignUpResponse, er
 	user := req.ToUser()
 	user.Password = u.bcryptUsecase.HashAndSalt(req.Password)
 	user.Referral = u.generateReferralCode()
+	user.Redeemable = &entity.Redeemable{}
 
 	registeredUser, err := u.userRepo.Insert(user)
 	if err != nil {

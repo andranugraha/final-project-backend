@@ -19,28 +19,32 @@ type UserRepository interface {
 	Insert(entity.User) (*entity.User, error)
 	UpdateDetail(entity.User) (*entity.User, error)
 	LevelUp(*gorm.DB, int, int64) (*entity.User, error)
+	AddRedeemablePoint(*gorm.DB, int) error
 }
 
 type userRepositoryImpl struct {
-	db        *gorm.DB
-	levelRepo LevelRepository
+	db             *gorm.DB
+	levelRepo      LevelRepository
+	redeemableRepo RedeemableRepository
 }
 
 type UserRConfig struct {
-	DB        *gorm.DB
-	LevelRepo LevelRepository
+	DB             *gorm.DB
+	LevelRepo      LevelRepository
+	RedeemableRepo RedeemableRepository
 }
 
 func NewUserRepository(cfg *UserRConfig) UserRepository {
 	return &userRepositoryImpl{
-		db:        cfg.DB,
-		levelRepo: cfg.LevelRepo,
+		db:             cfg.DB,
+		levelRepo:      cfg.LevelRepo,
+		redeemableRepo: cfg.RedeemableRepo,
 	}
 }
 
 func (r *userRepositoryImpl) FindById(id int) (*entity.User, error) {
 	var res *entity.User
-	err := r.db.First(&res, id)
+	err := r.db.Preload(clause.Associations).First(&res, id)
 	if err.Error != nil {
 		if errors.Is(err.Error, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrUserNotFound
@@ -143,4 +147,22 @@ func (r *userRepositoryImpl) LevelUp(tx *gorm.DB, id int, totalTransaction int64
 	}
 
 	return user, nil
+}
+
+func (r *userRepositoryImpl) AddRedeemablePoint(tx *gorm.DB, id int) error {
+	user, err := r.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	if user.Level.Point == 0 {
+		return nil
+	}
+
+	err = r.redeemableRepo.AddPoint(tx, user.ID, user.Level.Point)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

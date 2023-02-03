@@ -58,3 +58,41 @@ type UpdateCourseRequest struct {
 	Price      float64               `form:"price" binding:"required"`
 	Image      *multipart.FileHeader `form:"image"`
 }
+
+type GetCourseResponse struct {
+	ID             int              `json:"id"`
+	Title          string           `json:"title"`
+	Slug           string           `json:"slug"`
+	Summary        string           `json:"summary"`
+	Content        string           `json:"content"`
+	AuthorName     string           `json:"authorName"`
+	Status         string           `json:"status"`
+	CategoryId     int              `json:"categoryId"`
+	Price          float64          `json:"price"`
+	ImgUrl         string           `json:"imgUrl"`
+	ImgThumbnail   string           `json:"imgThumbnail"`
+	Category       *entity.Category `json:"category"`
+	Tags           []*entity.Tag    `json:"tags"`
+	IsBought       bool             `json:"isBought"`
+	IsEnrolled     bool             `json:"isEnrolled"`
+	IsInCart       bool             `json:"isInCart"`
+	IsFavorite     bool             `json:"isFavorite"`
+	TotalFavorite  int              `json:"totalFavorite"`
+	TotalCompleted int              `json:"totalCompleted"`
+}
+
+func (dto *GetCourseResponse) FromCourse(course entity.Course) {
+	dto.ID = course.ID
+	dto.Title = course.Title
+	dto.Slug = course.Slug
+	dto.Summary = course.Summary
+	dto.Content = course.Content
+	dto.AuthorName = course.AuthorName
+	dto.Status = course.Status
+	dto.CategoryId = course.CategoryId
+	dto.Price = course.Price
+	dto.ImgUrl = course.ImgUrl
+	dto.ImgThumbnail = course.ImgThumbnail
+	dto.Category = course.Category
+	dto.Tags = course.Tags
+}

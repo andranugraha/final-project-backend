@@ -49,8 +49,10 @@ func (h *Handler) GetCourses(c *gin.Context) {
 	splitTagIds := strings.Split(c.Query("tagIds"), ",")
 	var tagIds []int
 	for _, tagId := range splitTagIds {
-		id, _ := strconv.Atoi(tagId)
-		tagIds = append(tagIds, id)
+		if tagId != "" {
+			id, _ := strconv.Atoi(tagId)
+			tagIds = append(tagIds, id)
+		}
 	}
 
 	limit, _ := strconv.Atoi(c.Query("limit"))
@@ -68,8 +70,9 @@ func (h *Handler) GetCourses(c *gin.Context) {
 
 func (h *Handler) GetCourse(c *gin.Context) {
 	slug := c.Param("slug")
+	userId := c.GetInt("userId")
 
-	course, err := h.courseUsecase.GetCourse(slug)
+	course, err := h.courseUsecase.GetCourse(slug, userId)
 	if err != nil {
 		if errors.Is(err, errResp.ErrCourseNotFound) {
 			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
@@ -124,6 +127,51 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 	}
 
 	response.SendSuccess(c, http.StatusOK, nil)
+}
+
+func (h *Handler) GetUserCourses(c *gin.Context) {
+	roleId := c.GetInt("roleId")
+	categoryId, _ := strconv.Atoi(c.Query("categoryId"))
+	splitTagIds := strings.Split(c.Query("tagIds"), ",")
+	var tagIds []int
+	for _, tagId := range splitTagIds {
+		if tagId != "" {
+			id, _ := strconv.Atoi(tagId)
+			tagIds = append(tagIds, id)
+		}
+	}
+
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	page, _ := strconv.Atoi(c.Query("page"))
+	params := entity.NewCourseParams(c.Query("title"), categoryId, tagIds, c.Query("sort"), limit, page, roleId, c.Query("status"))
+
+	userId := c.GetInt("userId")
+
+	courses, totalRows, totalPages, err := h.courseUsecase.GetUserCourses(userId, params)
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
+		return
+	}
+
+	response.SendSuccessWithPagination(c, http.StatusOK, courses, totalRows, totalPages)
+}
+
+func (h *Handler) GetUserCourse(c *gin.Context) {
+	slug := c.Param("slug")
+	userId := c.GetInt("userId")
+
+	course, err := h.courseUsecase.GetUserCourse(userId, slug)
+	if err != nil {
+		if errors.Is(err, errResp.ErrCourseNotFound) {
+			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
+			return
+		}
+
+		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
+		return
+	}
+
+	response.SendSuccess(c, http.StatusOK, course)
 }
 
 func (h *Handler) CompleteCourse(c *gin.Context) {

@@ -14,6 +14,7 @@ require (
 
 require (
 	github.com/cloudinary/cloudinary-go/v2 v2.2.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/google/uuid v1.2.0
 	github.com/jackc/pgx/v5 v5.2.0
 )

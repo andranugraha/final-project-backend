@@ -3,11 +3,11 @@ package entity
 import "gorm.io/gorm"
 
 type UserCourse struct {
-	ID       int
-	UserId   int
-	User     User `gorm:"foreignKey:UserId"`
-	CourseId int
-	Course   Course `gorm:"foreignKey:CourseId"`
-	Status   string
-	gorm.Model
+	ID         int     `json:"id" gorm:"primaryKey"`
+	UserId     int     `json:"userId"`
+	User       *User   `json:"user,omitempty" gorm:"foreignKey:UserId"`
+	CourseId   int     `json:"courseId"`
+	Course     *Course `json:"course,omitempty" gorm:"foreignKey:CourseId"`
+	Status     string  `json:"status"`
+	gorm.Model `json:"-"`
 }

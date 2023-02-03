@@ -11,6 +11,7 @@ import (
 
 type CartRepository interface {
 	FindByUserId(userId int) ([]*entity.Cart, error)
+	FindByUserIdAndCourseId(userId, courseId int) (*entity.Cart, error)
 	Insert(cart entity.Cart) error
 	Delete(cart entity.Cart) error
 	EmptyCart(tx *gorm.DB, userId int) error
@@ -37,6 +38,19 @@ func (r *cartRepositoryImpl) FindByUserId(userId int) ([]*entity.Cart, error) {
 		return nil, err
 	}
 	return carts, nil
+}
+
+func (r *cartRepositoryImpl) FindByUserIdAndCourseId(userId, courseId int) (*entity.Cart, error) {
+	var cart entity.Cart
+	err := r.db.Where("user_id = ?", userId).Where("course_id = ?", courseId).First(&cart).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errResp.ErrCartNotFound
+		}
+		return nil, err
+	}
+
+	return &cart, nil
 }
 
 func (r *cartRepositoryImpl) Insert(cart entity.Cart) error {

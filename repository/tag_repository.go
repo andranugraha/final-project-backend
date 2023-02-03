@@ -8,6 +8,7 @@ import (
 
 type TagRepository interface {
 	FindOrCreate(*gorm.DB, *entity.Tag) (*entity.Tag, error)
+	FindAll() ([]*entity.Tag, error)
 }
 
 type tagRepositoryImpl struct {
@@ -31,4 +32,15 @@ func (r *tagRepositoryImpl) FindOrCreate(tx *gorm.DB, req *entity.Tag) (*entity.
 	}
 
 	return req, nil
+}
+
+func (r *tagRepositoryImpl) FindAll() ([]*entity.Tag, error) {
+	var tags []*entity.Tag
+
+	err := r.db.Find(&tags).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
 }

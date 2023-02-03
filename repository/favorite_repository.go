@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FavoriteRepository interface {
@@ -14,6 +15,7 @@ type FavoriteRepository interface {
 	FindByUserIdAndCourseId(userId, courseId int) (*entity.Favorite, error)
 	Insert(favorite entity.Favorite) error
 	Delete(favorite entity.Favorite) error
+	CountByCourseId(courseId int) int
 }
 
 type favoriteRepositoryImpl struct {
@@ -32,7 +34,7 @@ func NewFavoriteRepository(cfg *FavoriteRConfig) FavoriteRepository {
 
 func (r *favoriteRepositoryImpl) FindByUserId(userId int) ([]*entity.Course, error) {
 	var courses []*entity.Course
-	err := r.db.Where("user_id = ?", userId).Joins("JOIN favorites ON favorites.course_id = courses.id").Find(&courses).Error
+	err := r.db.Preload(clause.Associations).Where("user_id = ?", userId).Joins("JOIN favorites ON favorites.course_id = courses.id").Find(&courses).Error
 	if err != nil {
 		return nil, err
 	}
@@ -78,4 +80,11 @@ func (r *favoriteRepositoryImpl) Delete(favorite entity.Favorite) error {
 	}
 
 	return nil
+}
+
+func (r *favoriteRepositoryImpl) CountByCourseId(courseId int) int {
+	var count int64
+	r.db.Model(&entity.Favorite{}).Where("course_id = ?", courseId).Count(&count)
+
+	return int(count)
 }

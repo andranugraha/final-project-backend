@@ -24,13 +24,14 @@ type Course struct {
 }
 
 type CourseParams struct {
-	Keyword    string
-	CategoryId int
-	TagIds     []int
-	Sort       string
-	Limit      int
-	Page       int
-	Status     string
+	Keyword        string
+	CategoryId     int
+	TagIds         []int
+	Sort           string
+	Limit          int
+	Page           int
+	Status         string
+	ProgressStatus string
 }
 
 func (c *CourseParams) Scope() func(db *gorm.DB) *gorm.DB {
@@ -47,7 +48,10 @@ func (c *CourseParams) Scope() func(db *gorm.DB) *gorm.DB {
 				Having("COUNT(course_tags.id) = ?", len(c.TagIds))
 		}
 		if c.Status != "" {
-			db = db.Where("status = ?", c.Status)
+			db = db.Where("courses.status = ?", c.Status)
+		}
+		if c.ProgressStatus != "" {
+			db = db.Where("user_courses.status = ?", c.ProgressStatus)
 		}
 		return db
 	}
@@ -93,6 +97,12 @@ func NewCourseParams(s string, categoryId int, tagIds []int, sort string, limit,
 				return ""
 			}
 			return constant.PublishStatus
+		}(),
+		ProgressStatus: func() string {
+			if roleId == constant.UserRoleId && (status == constant.CourseStatusCompleted || status == constant.CourseStatusInProgress) {
+				return status
+			}
+			return ""
 		}(),
 	}
 }

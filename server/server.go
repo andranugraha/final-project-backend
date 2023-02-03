@@ -23,9 +23,14 @@ func createRouter() *gin.Engine {
 		DB: db.Get(),
 	})
 
+	redeemableRepo := repository.NewRedeemableRepository(&repository.RedeemableRConfig{
+		DB: db.Get(),
+	})
+
 	userRepo := repository.NewUserRepository(&repository.UserRConfig{
-		DB:        db.Get(),
-		LevelRepo: levelRepo,
+		DB:             db.Get(),
+		LevelRepo:      levelRepo,
+		RedeemableRepo: redeemableRepo,
 	})
 	authUsecase := usecase.NewAuthUsecase(&usecase.AuthUConfig{
 		UserRepo:      userRepo,
@@ -38,13 +43,8 @@ func createRouter() *gin.Engine {
 	tagRepo := repository.NewTagRepository(&repository.TagRConfig{
 		DB: db.Get(),
 	})
-
-	courseRepo := repository.NewCourseRepository(&repository.CourseRConfig{
-		DB:      db.Get(),
+	tagUsecase := usecase.NewTagUsecase(&usecase.TagUConfig{
 		TagRepo: tagRepo,
-	})
-	courseUsecase := usecase.NewCourseUsecase(&usecase.CourseUConfig{
-		CourseRepo: courseRepo,
 	})
 
 	favoriteRepo := repository.NewFavoriteRepository(&repository.FavoriteRConfig{
@@ -54,13 +54,29 @@ func createRouter() *gin.Engine {
 		FavoriteRepo: favoriteRepo,
 	})
 
+	userCourseRepo := repository.NewUserCourseRepository(&repository.UserCourseRConfig{
+		DB:       db.Get(),
+		UserRepo: userRepo,
+	})
+
 	transactionRepo := repository.NewTransactionRepository(&repository.TransactionRConfig{
 		DB: db.Get(),
 	})
-
+	courseRepo := repository.NewCourseRepository(&repository.CourseRConfig{
+		DB:      db.Get(),
+		TagRepo: tagRepo,
+	})
 	cartRepo := repository.NewCartRepository(&repository.CartRConfig{
 		DB: db.Get(),
 	})
+	courseUsecase := usecase.NewCourseUsecase(&usecase.CourseUConfig{
+		CourseRepo:      courseRepo,
+		UserCourseRepo:  userCourseRepo,
+		FavoriteUsecase: favoriteUsecase,
+		CartRepo:        cartRepo,
+		TransactionRepo: transactionRepo,
+	})
+
 	cartUsecase := usecase.NewCartUsecase(&usecase.CartUConfig{
 		CartRepo:        cartRepo,
 		CourseRepo:      courseRepo,
@@ -77,10 +93,6 @@ func createRouter() *gin.Engine {
 	})
 	UserVoucherUsecase := usecase.NewUserVoucherUsecase(&usecase.UserVoucherUConfig{
 		UserVoucherRepo: userVoucherRepo,
-	})
-
-	userCourseRepo := repository.NewUserCourseRepository(&repository.UserCourseRConfig{
-		DB: db.Get(),
 	})
 
 	invoiceRepo := repository.NewInvoiceRepository(&repository.InvoiceRConfig{
@@ -106,6 +118,7 @@ func createRouter() *gin.Engine {
 		InvoiceUsecase:     invoiceUsecase,
 		UserVoucherUsecase: UserVoucherUsecase,
 		CategoryUsecase:    categoryUsecase,
+		TagUsecase:         tagUsecase,
 	})
 }
 

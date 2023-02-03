@@ -44,11 +44,9 @@ func Upload(image *multipart.FileHeader, fileName string) (*StoredImage, error) 
 		return nil, err
 	}
 
-	urlWithoutExtension := removeExtension(uploadResult.SecureURL)
-
 	return &StoredImage{
-		Url:          urlWithoutExtension,
-		ThumbnailUrl: getThumbnailUrl(urlWithoutExtension),
+		Url:          uploadResult.SecureURL,
+		ThumbnailUrl: getThumbnailUrl(uploadResult.SecureURL),
 	}, nil
 }
 
@@ -80,10 +78,6 @@ func Delete(fileName string) error {
 	}
 
 	return nil
-}
-
-func removeExtension(fileName string) string {
-	return strings.Split(fileName, ".")[0]
 }
 
 func getThumbnailUrl(url string) string {

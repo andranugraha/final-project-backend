@@ -8,5 +8,6 @@ type Level struct {
 	Discount        float64 `json:"discount"`
 	AvatarUrl       string  `json:"avatarUrl"`
 	MinTransanction int     `json:"minTransanction"`
+	Point           int     `json:"point"`
 	gorm.Model      `json:"-"`
 }

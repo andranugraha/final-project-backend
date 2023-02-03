@@ -19,7 +19,7 @@ func (h *Handler) GetInvoices(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
 
-	params := entity.NewInvoiceParams(c.Query("status"), c.Query("sort"), page, limit, userId, roleId)
+	params := entity.NewInvoiceParams(c.Query("status"), c.Query("sort"), limit, page, userId, roleId)
 
 	invoices, totalRows, totalPages, err := h.invoiceUsecase.GetInvoices(params)
 	if err != nil {
