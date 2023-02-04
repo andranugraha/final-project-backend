@@ -16,7 +16,7 @@ import (
 func (h *Handler) CreateCourse(c *gin.Context) {
 	var req dto.CreateCourseRequest
 	if err := c.ShouldBind(&req); err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *Handler) GetCourse(c *gin.Context) {
 func (h *Handler) UpdateCourse(c *gin.Context) {
 	var req dto.UpdateCourseRequest
 	if err := c.ShouldBind(&req); err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
 
@@ -126,7 +126,7 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, nil)
+	response.SendSuccessWithMessage(c, http.StatusOK, nil, "Course deleted successfully")
 }
 
 func (h *Handler) GetUserCourses(c *gin.Context) {
@@ -188,5 +188,5 @@ func (h *Handler) CompleteCourse(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, nil)
+	response.SendSuccessWithMessage(c, http.StatusOK, nil, "Course completed successfully")
 }

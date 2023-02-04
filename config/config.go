@@ -23,7 +23,7 @@ func getENV(key, defaultVal string) string {
 }
 
 var (
-	ENV      = getENV("APP_ENV", "testing")
+	ENV      = getENV("APP_ENV", "test")
 	AppName  = "sea-labs-library"
 	DBConfig = dbConfig{
 		Host:     getENV("DB_HOST", "localhost"),

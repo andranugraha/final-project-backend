@@ -24,16 +24,14 @@ type CreateCourseResponse struct {
 
 func (dto CreateCourseRequest) ToCourse(slug string, image storage.StoredImage) entity.Course {
 	return entity.Course{
-		Title:        dto.Title,
-		Slug:         slug,
-		Summary:      dto.Summary,
-		Content:      dto.Content,
-		AuthorName:   dto.AuthorName,
-		Status:       dto.Status,
-		CategoryId:   dto.CategoryId,
-		Price:        dto.Price,
-		ImgUrl:       image.Url,
-		ImgThumbnail: image.ThumbnailUrl,
+		Title:      dto.Title,
+		Slug:       slug,
+		Summary:    dto.Summary,
+		Content:    dto.Content,
+		AuthorName: dto.AuthorName,
+		Status:     dto.Status,
+		CategoryId: dto.CategoryId,
+		Price:      dto.Price,
 		Tags: func() []*entity.Tag {
 			var tags []*entity.Tag
 			for _, tag := range dto.Tags {
