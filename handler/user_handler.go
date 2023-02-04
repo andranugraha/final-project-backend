@@ -25,7 +25,7 @@ func (h *Handler) UpdateUserDetail(c *gin.Context) {
 	userId := c.GetInt("userId")
 	var req dto.UpdateUserDetailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
 
