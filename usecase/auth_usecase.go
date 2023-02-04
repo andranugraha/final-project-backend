@@ -6,8 +6,6 @@ import (
 	"final-project-backend/repository"
 	"final-project-backend/utils/auth"
 	"final-project-backend/utils/errors"
-	"math/rand"
-	"time"
 )
 
 type AuthUsecase interface {
@@ -16,26 +14,26 @@ type AuthUsecase interface {
 }
 
 type authUsecaseImpl struct {
-	userRepo      repository.UserRepository
-	bcryptUsecase auth.AuthUtil
+	userRepo    repository.UserRepository
+	utilUsecase auth.AuthUtil
 }
 
 type AuthUConfig struct {
-	UserRepo      repository.UserRepository
-	BcryptUsecase auth.AuthUtil
+	UserRepo    repository.UserRepository
+	UtilUsecase auth.AuthUtil
 }
 
 func NewAuthUsecase(cfg *AuthUConfig) AuthUsecase {
 	return &authUsecaseImpl{
-		userRepo:      cfg.UserRepo,
-		bcryptUsecase: cfg.BcryptUsecase,
+		userRepo:    cfg.UserRepo,
+		utilUsecase: cfg.UtilUsecase,
 	}
 }
 
 func (u *authUsecaseImpl) SignUp(req dto.SignUpRequest) (*dto.SignUpResponse, error) {
 	user := req.ToUser()
-	user.Password = u.bcryptUsecase.HashAndSalt(req.Password)
-	user.Referral = u.generateReferralCode()
+	user.Password = u.utilUsecase.HashAndSalt(req.Password)
+	user.Referral = u.utilUsecase.GenerateReferralCode()
 	user.Redeemable = &entity.Redeemable{}
 
 	registeredUser, err := u.userRepo.Insert(user)
@@ -55,23 +53,11 @@ func (u *authUsecaseImpl) SignIn(req dto.SignInRequest, roleId int) (*dto.SignIn
 		return nil, err
 	}
 
-	if !u.bcryptUsecase.ComparePassword(user.Password, req.Password) {
+	if !u.utilUsecase.ComparePassword(user.Password, req.Password) {
 		return nil, errors.ErrWrongPassword
 	}
 
-	res := u.bcryptUsecase.GenerateAccessToken(*user)
+	res := u.utilUsecase.GenerateAccessToken(*user)
 
 	return &res, nil
-}
-
-func (u *authUsecaseImpl) generateReferralCode() string {
-	rand.Seed(time.Now().UnixNano())
-	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	referralCode := ""
-
-	for i := 0; i < 7; i++ {
-		referralCode += string(alphabet[rand.Intn(len(alphabet))])
-	}
-
-	return referralCode
 }
