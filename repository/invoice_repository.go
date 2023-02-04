@@ -12,6 +12,7 @@ import (
 
 type InvoiceRepository interface {
 	FindById(id string) (*entity.Invoice, error)
+	FindByIdAndUserId(id string, userId int) (*entity.Invoice, error)
 	FindAll(params entity.InvoiceParams) ([]*entity.Invoice, int64, int, error)
 	Insert(invoice entity.Invoice) (*entity.Invoice, error)
 	Update(invoice entity.Invoice) (*entity.Invoice, error)
@@ -46,6 +47,18 @@ func NewInvoiceRepository(cfg *InvoiceRConfig) InvoiceRepository {
 func (r *invoiceRepositoryImpl) FindById(id string) (*entity.Invoice, error) {
 	var invoice entity.Invoice
 	err := r.db.Preload("Transactions.Course").Where("id = ?", id).Preload("Voucher").First(&invoice).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errResp.ErrInvoiceNotFound
+		}
+		return nil, err
+	}
+	return &invoice, nil
+}
+
+func (r *invoiceRepositoryImpl) FindByIdAndUserId(id string, userId int) (*entity.Invoice, error) {
+	var invoice entity.Invoice
+	err := r.db.Preload("Transactions.Course").Where("id = ? AND user_id = ?", id, userId).Preload("Voucher").First(&invoice).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errResp.ErrInvoiceNotFound

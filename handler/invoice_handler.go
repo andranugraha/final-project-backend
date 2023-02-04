@@ -56,11 +56,7 @@ func (h *Handler) GetInvoice(c *gin.Context) {
 func (h *Handler) Checkout(c *gin.Context) {
 	userId := c.GetInt("userId")
 	var req dto.CheckoutRequest
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
-		return
-	}
+	c.ShouldBindJSON(&req)
 
 	invoice, err := h.invoiceUsecase.Checkout(userId, req)
 	if err != nil {
@@ -105,7 +101,7 @@ func (h *Handler) ConfirmInvoice(c *gin.Context) {
 	var req dto.ConfirmInvoiceRequest
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidBody.Error())
 		return
 	}
 

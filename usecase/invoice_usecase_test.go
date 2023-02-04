@@ -66,36 +66,72 @@ func TestGetInvoices(t *testing.T) {
 
 func TestGetInvoiceDetail(t *testing.T) {
 	var (
-		userId    = 1
-		invoiceId = uuid.New()
+		userId      = 1
+		adminUserId = 0
+		invoiceId   = uuid.New()
 	)
 
 	tests := map[string]struct {
+		userId      int
 		expectedRes *entity.Invoice
 		expectedErr error
+		beforeTest  func(*mocks.InvoiceRepository)
 	}{
-		"should return invoice when given valid request": {
+		"should return invoice when get as user success": {
+			userId: userId,
 			expectedRes: &entity.Invoice{
 				ID:     invoiceId,
 				UserId: userId,
 			},
 			expectedErr: nil,
+			beforeTest: func(mockRepo *mocks.InvoiceRepository) {
+				mockRepo.On("FindByIdAndUserId", invoiceId.String(), userId).Return(&entity.Invoice{
+					ID:     invoiceId,
+					UserId: userId,
+				}, nil)
+			},
 		},
-		"should return error when find failed": {
+		"should return invoice when get as admin success": {
+			userId: adminUserId,
+			expectedRes: &entity.Invoice{
+				ID:     invoiceId,
+				UserId: adminUserId,
+			},
+			expectedErr: nil,
+			beforeTest: func(mockRepo *mocks.InvoiceRepository) {
+				mockRepo.On("FindById", invoiceId.String()).Return(&entity.Invoice{
+					ID:     invoiceId,
+					UserId: adminUserId,
+				}, nil)
+			},
+		},
+		"should return error when get as user failed": {
+			userId:      userId,
 			expectedRes: nil,
 			expectedErr: errResp.ErrInternalServerError,
+			beforeTest: func(mockRepo *mocks.InvoiceRepository) {
+				mockRepo.On("FindByIdAndUserId", invoiceId.String(), userId).Return(nil, errResp.ErrInternalServerError)
+			},
+		},
+		"should return error when get as admin failed": {
+			userId:      adminUserId,
+			expectedRes: nil,
+			expectedErr: errResp.ErrInternalServerError,
+			beforeTest: func(mockRepo *mocks.InvoiceRepository) {
+				mockRepo.On("FindById", invoiceId.String()).Return(nil, errResp.ErrInternalServerError)
+			},
 		},
 	}
 
 	for scenario, test := range tests {
 		t.Run(scenario, func(t *testing.T) {
 			mockRepo := mocks.NewInvoiceRepository(t)
-			mockRepo.On("FindByIdAndUserId", invoiceId.String(), userId).Return(test.expectedRes, test.expectedErr)
+			test.beforeTest(mockRepo)
 			u := usecase.NewInvoiceUsecase(&usecase.InvoiceUConfig{
 				InvoiceRepo: mockRepo,
 			})
 
-			res, err := u.GetInvoiceDetail(userId, invoiceId.String())
+			res, err := u.GetInvoiceDetail(test.userId, invoiceId.String())
 
 			assert.Equal(t, test.expectedRes, res)
 			assert.ErrorIs(t, test.expectedErr, err)

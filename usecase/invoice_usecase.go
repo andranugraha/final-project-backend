@@ -45,6 +45,10 @@ func (u *invoiceUsecaseImpl) GetInvoices(params entity.InvoiceParams) ([]*entity
 }
 
 func (u *invoiceUsecaseImpl) GetInvoiceDetail(userId int, invoiceId string) (*entity.Invoice, error) {
+	if userId == 0 {
+		return u.invoiceRepo.FindById(invoiceId)
+	}
+
 	return u.invoiceRepo.FindByIdAndUserId(invoiceId, userId)
 }
 
