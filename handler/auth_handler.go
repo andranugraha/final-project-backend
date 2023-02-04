@@ -64,7 +64,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 	res, err := h.authUsecase.SignUp(req)
 	if err != nil {
 		if errors.Is(err, errResp.ErrDuplicateRecord) {
-			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrUserAlreadyExist.Error())
 			return
 		}
 

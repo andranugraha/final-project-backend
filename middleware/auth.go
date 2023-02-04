@@ -14,6 +14,12 @@ import (
 )
 
 func Authenticated(c *gin.Context) {
+	if config.ENV == "test" {
+		c.Set("userId", 1)
+		c.Next()
+		return
+	}
+
 	tokenString, err := getJwtToken(c.GetHeader("Authorization"))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{

@@ -134,7 +134,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 			tag.GET("", h.GetTags)
 		}
 
-		category := v1.Group("/category")
+		category := v1.Group("/categories")
 		{
 			category.GET("", h.GetCategories)
 		}

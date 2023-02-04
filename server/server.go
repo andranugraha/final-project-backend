@@ -7,6 +7,7 @@ import (
 	"final-project-backend/repository"
 	"final-project-backend/usecase"
 	"final-project-backend/utils/auth"
+	"final-project-backend/utils/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,9 +33,10 @@ func createRouter() *gin.Engine {
 		LevelRepo:      levelRepo,
 		RedeemableRepo: redeemableRepo,
 	})
+	authUtil := auth.NewAuthUtil()
 	authUsecase := usecase.NewAuthUsecase(&usecase.AuthUConfig{
-		UserRepo:      userRepo,
-		BcryptUsecase: auth.AuthUtilImpl{},
+		UserRepo:    userRepo,
+		UtilUsecase: authUtil,
 	})
 	userUsecase := usecase.NewUserUsecase(&usecase.UserUConfig{
 		UserRepo: userRepo,
@@ -69,12 +71,14 @@ func createRouter() *gin.Engine {
 	cartRepo := repository.NewCartRepository(&repository.CartRConfig{
 		DB: db.Get(),
 	})
+	storageUtil := storage.NewStorageUtil()
 	courseUsecase := usecase.NewCourseUsecase(&usecase.CourseUConfig{
 		CourseRepo:      courseRepo,
 		UserCourseRepo:  userCourseRepo,
 		FavoriteUsecase: favoriteUsecase,
 		CartRepo:        cartRepo,
 		TransactionRepo: transactionRepo,
+		StorageUtil:     storageUtil,
 	})
 
 	cartUsecase := usecase.NewCartUsecase(&usecase.CartUConfig{

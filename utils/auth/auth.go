@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"math/rand"
 	"time"
 
 	"final-project-backend/config"
@@ -15,33 +16,46 @@ type AuthUtil interface {
 	HashAndSalt(pwd string) string
 	ComparePassword(hashedPwd string, inputPwd string) bool
 	GenerateAccessToken(req entity.User) dto.SignInResponse
+	GenerateReferralCode() string
 }
 
-type AuthUtilImpl struct{}
+type authUtilImpl struct{}
 
 func NewAuthUtil() AuthUtil {
-	return AuthUtilImpl{}
+	return authUtilImpl{}
 }
 
-func (d AuthUtilImpl) HashAndSalt(pwd string) string {
+func (d authUtilImpl) HashAndSalt(pwd string) string {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
 
 	return string(hash)
 }
 
-func (d AuthUtilImpl) ComparePassword(hashedPwd string, inputPwd string) bool {
+func (d authUtilImpl) ComparePassword(hashedPwd string, inputPwd string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(inputPwd))
 	return err == nil
 }
 
+func (d authUtilImpl) GenerateReferralCode() string {
+	rand.Seed(time.Now().UnixNano())
+	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	referralCode := ""
+
+	for i := 0; i < 7; i++ {
+		referralCode += string(alphabet[rand.Intn(len(alphabet))])
+	}
+
+	return referralCode
+}
+
 type accessTokenClaims struct {
-	UserId   int   `json:"userId"`
-	Email    string `json:"email"`
-	RoleId  int   `json:"roleId"`
+	UserId int    `json:"userId"`
+	Email  string `json:"email"`
+	RoleId int    `json:"roleId"`
 	jwt.RegisteredClaims
 }
 
-func (d AuthUtilImpl) GenerateAccessToken(req entity.User) dto.SignInResponse {
+func (d authUtilImpl) GenerateAccessToken(req entity.User) dto.SignInResponse {
 	claims := accessTokenClaims{
 		req.ID,
 		req.Email,

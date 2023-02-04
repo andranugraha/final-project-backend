@@ -20,8 +20,11 @@ var (
 	ErrDuplicateFavorite = errors.New("duplicate favorite")
 	ErrDuplicateCart     = errors.New("duplicate cart")
 
-	ErrInvalidBody  = errors.New("invalid body request")
-	ErrInvalidParam = errors.New("invalid params")
+	ErrUserAlreadyExist = errors.New("user already exist")
+
+	ErrInvalidParamFormat = errors.New("invalid param format")
+	ErrInvalidBody        = errors.New("invalid body request")
+	ErrInvalidParam       = errors.New("invalid params")
 
 	ErrUserNotFound       = errors.New("user not found")
 	ErrRecordNotFound     = errors.New("record not found")
@@ -36,6 +39,7 @@ var (
 	ErrInvoiceAlreadyPaid                     = errors.New("invoice already paid")
 	ErrInvoiceStatusNotWaitingForConfirmation = errors.New("invoice status is not waiting for confirmation")
 	ErrInvalidInvoiceAction                   = errors.New("invalid invoice action")
+	ErrInvalidInvoiceStatus                   = errors.New("invalid invoice status")
 	ErrCourseAlreadyBought                    = errors.New("course already bought")
 	ErrCourseAlreadyCompleted                 = errors.New("course already completed")
 

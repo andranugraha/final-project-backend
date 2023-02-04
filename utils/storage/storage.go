@@ -21,6 +21,18 @@ type StoredImage struct {
 	ThumbnailUrl string
 }
 
+type StorageUtil interface {
+	Upload(*multipart.FileHeader, string) (*StoredImage, error)
+	Rename(string, string) (*StoredImage, error)
+	Delete(string) error
+}
+
+type storageUtilImpl struct{}
+
+func NewStorageUtil() StorageUtil {
+	return storageUtilImpl{}
+}
+
 func Connect() (err error) {
 	cld, err = cloudinary.NewFromURL(config.CloudinaryUrl)
 	if err != nil {
@@ -32,7 +44,7 @@ func Connect() (err error) {
 	return
 }
 
-func Upload(image *multipart.FileHeader, fileName string) (*StoredImage, error) {
+func (s storageUtilImpl) Upload(image *multipart.FileHeader, fileName string) (*StoredImage, error) {
 	imageFile, _ := image.Open()
 	defer imageFile.Close()
 
@@ -46,11 +58,11 @@ func Upload(image *multipart.FileHeader, fileName string) (*StoredImage, error) 
 
 	return &StoredImage{
 		Url:          uploadResult.SecureURL,
-		ThumbnailUrl: getThumbnailUrl(uploadResult.SecureURL),
+		ThumbnailUrl: s.getThumbnailUrl(uploadResult.SecureURL),
 	}, nil
 }
 
-func Rename(oldName, newName string) (*StoredImage, error) {
+func (s storageUtilImpl) Rename(oldName, newName string) (*StoredImage, error) {
 	updatedResult, err := cld.Upload.Rename(ctx, uploader.RenameParams{
 		FromPublicID: oldName,
 		ToPublicID:   newName,
@@ -61,11 +73,11 @@ func Rename(oldName, newName string) (*StoredImage, error) {
 
 	return &StoredImage{
 		Url:          updatedResult.SecureURL,
-		ThumbnailUrl: getThumbnailUrl(updatedResult.SecureURL),
+		ThumbnailUrl: s.getThumbnailUrl(updatedResult.SecureURL),
 	}, nil
 }
 
-func Delete(fileName string) error {
+func (s storageUtilImpl) Delete(fileName string) error {
 	res, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
 		PublicID: "courses/" + fileName,
 	})
@@ -80,6 +92,6 @@ func Delete(fileName string) error {
 	return nil
 }
 
-func getThumbnailUrl(url string) string {
+func (s *storageUtilImpl) getThumbnailUrl(url string) string {
 	return strings.Replace(url, "upload/", "upload/w_auto,h_300,c_fill,g_auto,f_auto/", 1)
 }
