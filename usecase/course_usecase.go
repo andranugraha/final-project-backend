@@ -28,6 +28,7 @@ type courseUsecaseImpl struct {
 	favoriteUsecase FavoriteUsecase
 	cartRepo        repository.CartRepository
 	transactionRepo repository.TransactionRepository
+	storageUtil     storage.StorageUtil
 }
 
 type CourseUConfig struct {
@@ -36,6 +37,7 @@ type CourseUConfig struct {
 	FavoriteUsecase FavoriteUsecase
 	CartRepo        repository.CartRepository
 	TransactionRepo repository.TransactionRepository
+	StorageUtil     storage.StorageUtil
 }
 
 func NewCourseUsecase(cfg *CourseUConfig) CourseUsecase {
@@ -45,6 +47,7 @@ func NewCourseUsecase(cfg *CourseUConfig) CourseUsecase {
 		favoriteUsecase: cfg.FavoriteUsecase,
 		cartRepo:        cfg.CartRepo,
 		transactionRepo: cfg.TransactionRepo,
+		storageUtil:     cfg.StorageUtil,
 	}
 }
 
@@ -103,7 +106,7 @@ func (u *courseUsecaseImpl) GetUserCourse(userId int, slug string) (*entity.User
 
 func (u *courseUsecaseImpl) CreateCourse(req dto.CreateCourseRequest) (*entity.Course, error) {
 	courseSlug := u.generateSlug(req.Title)
-	imgUrl, err := storage.Upload(&req.Image, courseSlug)
+	imgUrl, err := u.storageUtil.Upload(&req.Image, courseSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +133,7 @@ func (u *courseUsecaseImpl) UpdateCourse(slug string, req dto.UpdateCourseReques
 		newSlug = u.generateSlug(req.Title)
 
 		if req.Image == nil {
-			imgUrl, err := storage.Rename(course.Slug, newSlug)
+			imgUrl, err := u.storageUtil.Rename(course.Slug, newSlug)
 			if err != nil {
 				return nil, err
 			}
@@ -141,9 +144,9 @@ func (u *courseUsecaseImpl) UpdateCourse(slug string, req dto.UpdateCourseReques
 	}
 
 	if req.Image != nil {
-		storage.Delete(course.Slug)
+		u.storageUtil.Delete(course.Slug)
 
-		imgUrl, err := storage.Upload(req.Image, newSlug)
+		imgUrl, err := u.storageUtil.Upload(req.Image, newSlug)
 		if err != nil {
 			return nil, err
 		}
@@ -188,12 +191,7 @@ func (u *courseUsecaseImpl) DeleteCourse(slug string) error {
 }
 
 func (u *courseUsecaseImpl) CompleteCourse(userId int, slug string) error {
-	course, err := u.courseRepo.FindBySlug(slug)
-	if err != nil {
-		return err
-	}
-
-	userCourse, err := u.userCourseRepo.FindByUserIdAndCourseId(userId, course.ID)
+	userCourse, err := u.userCourseRepo.FindByUserIdAndCourseSlug(userId, slug)
 	if err != nil {
 		return err
 	}
