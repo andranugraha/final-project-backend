@@ -26,7 +26,7 @@ func (h *Handler) SaveUnsaveFavoriteCourse(c *gin.Context) {
 	courseId, err := strconv.Atoi(c.Param("courseId"))
 	action := c.Param("action")
 	if err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidParamFormat.Error())
 		return
 	}
 
@@ -37,7 +37,7 @@ func (h *Handler) SaveUnsaveFavoriteCourse(c *gin.Context) {
 			return
 		}
 
-		if errors.Is(err, errResp.ErrDuplicateFavorite) {
+		if errors.Is(err, errResp.ErrDuplicateFavorite) || errors.Is(err, errResp.ErrUnknownAction) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 			return
 		}
