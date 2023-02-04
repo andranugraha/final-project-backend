@@ -25,7 +25,7 @@ func (h *Handler) AddToCart(c *gin.Context) {
 	userId := c.GetInt("userId")
 	courseId, err := strconv.Atoi(c.Param("courseId"))
 	if err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidParamFormat.Error())
 		return
 	}
 	err = h.cartUsecase.AddToCart(userId, courseId)
@@ -39,20 +39,20 @@ func (h *Handler) AddToCart(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, nil)
+	response.SendSuccessWithMessage(c, http.StatusOK, nil, "Course added to cart")
 }
 
 func (h *Handler) RemoveFromCart(c *gin.Context) {
 	userId := c.GetInt("userId")
 	courseId, err := strconv.Atoi(c.Param("courseId"))
 	if err != nil {
-		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
+		response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, errResp.ErrInvalidParamFormat.Error())
 		return
 	}
 	err = h.cartUsecase.RemoveFromCart(userId, courseId)
 	if err != nil {
-		if errors.Is(err, errResp.ErrCartNotFound) {
-			response.SendError(c, http.StatusNotFound, errResp.ErrCodeNotFound, err.Error())
+		if errors.Is(err, errResp.ErrCartNotFound) || errors.Is(err, errResp.ErrCourseNotFound) {
+			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeBadRequest, err.Error())
 			return
 		}
 
@@ -60,5 +60,5 @@ func (h *Handler) RemoveFromCart(c *gin.Context) {
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, nil)
+	response.SendSuccessWithMessage(c, http.StatusOK, nil, "Course removed from cart")
 }
