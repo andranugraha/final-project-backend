@@ -45,16 +45,7 @@ func (u *invoiceUsecaseImpl) GetInvoices(params entity.InvoiceParams) ([]*entity
 }
 
 func (u *invoiceUsecaseImpl) GetInvoiceDetail(userId int, invoiceId string) (*entity.Invoice, error) {
-	invoice, err := u.invoiceRepo.FindById(invoiceId)
-	if err != nil {
-		return nil, err
-	}
-
-	if userId > 0 && invoice.UserId != userId {
-		return nil, errResp.ErrForbidden
-	}
-
-	return invoice, nil
+	return u.invoiceRepo.FindByIdAndUserId(invoiceId, userId)
 }
 
 func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*entity.Invoice, error) {
@@ -87,6 +78,7 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 
 	invoice.Subtotal = subtotal
 	total := subtotal
+
 	if req.VoucherCode != "" {
 		userVoucher, err := u.userVoucherUsecase.FindValidByCode(req.VoucherCode, userId)
 		if err != nil {
@@ -98,6 +90,10 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 		invoice.Voucher = &userVoucher.Voucher
 
 		total -= userVoucher.Voucher.Amount
+
+		if total < 0 {
+			total = 0
+		}
 	}
 
 	if user.Level.Discount > 0 {
@@ -112,13 +108,9 @@ func (u *invoiceUsecaseImpl) Checkout(userId int, req dto.CheckoutRequest) (*ent
 }
 
 func (u *invoiceUsecaseImpl) PayInvoice(userId int, invoiceId string) (*entity.Invoice, error) {
-	invoice, err := u.invoiceRepo.FindById(invoiceId)
+	invoice, err := u.invoiceRepo.FindByIdAndUserId(invoiceId, userId)
 	if err != nil {
 		return nil, err
-	}
-
-	if invoice.UserId != userId {
-		return nil, errResp.ErrForbidden
 	}
 
 	if invoice.Status != constant.InvoiceStatusWaitingPayment {
@@ -136,6 +128,10 @@ func (u *invoiceUsecaseImpl) ConfirmInvoice(invoiceId, status string) (*entity.I
 	invoice, err := u.invoiceRepo.FindById(invoiceId)
 	if err != nil {
 		return nil, err
+	}
+
+	if status != constant.InvoiceStatusCompleted && status != constant.InvoiceStatusCancelled {
+		return nil, errResp.ErrInvalidInvoiceStatus
 	}
 
 	if invoice.Status != constant.InvoiceStatusWaitingConfirmation {
