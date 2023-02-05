@@ -17,6 +17,9 @@ import (
 )
 
 func TestGetFavoriteCourses(t *testing.T) {
+	var (
+		params = entity.NewFavoritesParams(1, 10, 1)
+	)
 	tests := map[string]struct {
 		code        int
 		expectedRes gin.H
@@ -31,14 +34,16 @@ func TestGetFavoriteCourses(t *testing.T) {
 						ID: 1,
 					},
 				},
+				"totalRows":  1,
+				"totalPages": 1,
 			},
 			expectedErr: nil,
 			beforeTest: func(mock *mocks.FavoriteUsecase) {
-				mock.On("GetFavoriteCourses", 1).Return([]*entity.Course{
+				mock.On("GetFavoriteCourses", params).Return([]*entity.Course{
 					{
 						ID: 1,
 					},
-				}, nil)
+				}, int64(1), 1, nil)
 			},
 		},
 		"should return error when failed": {
@@ -49,7 +54,7 @@ func TestGetFavoriteCourses(t *testing.T) {
 			},
 			expectedErr: errors.ErrInternalServerError,
 			beforeTest: func(mock *mocks.FavoriteUsecase) {
-				mock.On("GetFavoriteCourses", 1).Return(nil, errors.ErrInternalServerError)
+				mock.On("GetFavoriteCourses", params).Return(nil, int64(0), 0, errors.ErrInternalServerError)
 			},
 		},
 	}

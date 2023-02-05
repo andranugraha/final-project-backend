@@ -4,6 +4,7 @@ import (
 	"errors"
 	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
+	"math"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ import (
 )
 
 type FavoriteRepository interface {
-	FindByUserId(userId int) ([]*entity.Course, error)
+	FindByUserId(entity.GetFavoritesParams) ([]*entity.Course, int64, int, error)
 	FindByUserIdAndCourseId(userId, courseId int) (*entity.Favorite, error)
 	Insert(favorite entity.Favorite) error
 	Delete(favorite entity.Favorite) error
@@ -32,14 +33,20 @@ func NewFavoriteRepository(cfg *FavoriteRConfig) FavoriteRepository {
 	}
 }
 
-func (r *favoriteRepositoryImpl) FindByUserId(userId int) ([]*entity.Course, error) {
+func (r *favoriteRepositoryImpl) FindByUserId(params entity.GetFavoritesParams) ([]*entity.Course, int64, int, error) {
 	var courses []*entity.Course
-	err := r.db.Preload(clause.Associations).Where("user_id = ?", userId).Joins("JOIN favorites ON favorites.course_id = courses.id").Find(&courses).Error
+	var count int64
+
+	db := r.db.Scopes(params.Scope()).Joins("JOIN favorites ON favorites.course_id = courses.id")
+	db.Model(&courses).Count(&count)
+	totalPages := int(math.Ceil(float64(count) / float64(params.Limit)))
+
+	err := db.Preload(clause.Associations).Offset(params.Offset()).Limit(params.Limit).Find(&courses).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
 
-	return courses, nil
+	return courses, count, totalPages, nil
 }
 
 func (r *favoriteRepositoryImpl) FindByUserIdAndCourseId(userId, courseId int) (*entity.Favorite, error) {

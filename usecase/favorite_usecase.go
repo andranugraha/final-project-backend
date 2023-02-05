@@ -7,7 +7,7 @@ import (
 )
 
 type FavoriteUsecase interface {
-	GetFavoriteCourses(userId int) ([]*entity.Course, error)
+	GetFavoriteCourses(entity.GetFavoritesParams) ([]*entity.Course, int64, int, error)
 	GetTotalFavorited(courseId int) int
 	CheckIsFavoriteCourse(userId, courseId int) bool
 	SaveUnsaveFavoriteCourse(userId, courseId int, action string) error
@@ -27,8 +27,8 @@ func NewFavoriteUsecase(cfg *FavoriteUConfig) FavoriteUsecase {
 	}
 }
 
-func (u *favoriteUsecaseImpl) GetFavoriteCourses(userId int) ([]*entity.Course, error) {
-	return u.favoriteRepo.FindByUserId(userId)
+func (u *favoriteUsecaseImpl) GetFavoriteCourses(params entity.GetFavoritesParams) ([]*entity.Course, int64, int, error) {
+	return u.favoriteRepo.FindByUserId(params)
 }
 
 func (u *favoriteUsecaseImpl) CheckIsFavoriteCourse(userId, courseId int) bool {

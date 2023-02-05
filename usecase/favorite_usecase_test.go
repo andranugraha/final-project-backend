@@ -12,7 +12,7 @@ import (
 
 func TestGetFavoriteCourses(t *testing.T) {
 	var (
-		userId  = 1
+		params  = entity.NewFavoritesParams(1, 10, 1)
 		courses = []*entity.Course{
 			{
 				ID: 1,
@@ -21,33 +21,38 @@ func TestGetFavoriteCourses(t *testing.T) {
 	)
 
 	tests := map[string]struct {
-		findRes     []*entity.Course
-		expectedRes []*entity.Course
-		expectedErr error
+		expectedRes        []*entity.Course
+		expectedTotalRows  int64
+		expectedTotalPages int
+		expectedErr        error
 	}{
 		"should return favorite courses when given valid request": {
-			findRes:     courses,
-			expectedRes: courses,
-			expectedErr: nil,
+			expectedRes:        courses,
+			expectedTotalRows:  int64(1),
+			expectedTotalPages: 1,
+			expectedErr:        nil,
 		},
 		"should return error when find failed": {
-			findRes:     []*entity.Course{},
-			expectedRes: []*entity.Course{},
-			expectedErr: errResp.ErrInternalServerError,
+			expectedRes:        []*entity.Course{},
+			expectedTotalRows:  int64(0),
+			expectedTotalPages: 0,
+			expectedErr:        errResp.ErrInternalServerError,
 		},
 	}
 
 	for scenario, test := range tests {
 		t.Run(scenario, func(t *testing.T) {
 			mockRepo := mocks.NewFavoriteRepository(t)
-			mockRepo.On("FindByUserId", userId).Return(test.findRes, test.expectedErr).Once()
+			mockRepo.On("FindByUserId", params).Return(test.expectedRes, test.expectedTotalRows, test.expectedTotalPages, test.expectedErr).Once()
 			u := usecase.NewFavoriteUsecase(&usecase.FavoriteUConfig{
 				FavoriteRepo: mockRepo,
 			})
 
-			res, err := u.GetFavoriteCourses(userId)
+			res, totalRows, totalPages, err := u.GetFavoriteCourses(params)
 
 			assert.Equal(t, test.expectedRes, res)
+			assert.Equal(t, test.expectedTotalRows, totalRows)
+			assert.Equal(t, test.expectedTotalPages, totalPages)
 			assert.ErrorIs(t, test.expectedErr, err)
 		})
 	}

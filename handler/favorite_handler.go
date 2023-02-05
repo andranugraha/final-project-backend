@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
 	"final-project-backend/utils/response"
 	"net/http"
@@ -12,13 +13,16 @@ import (
 
 func (h *Handler) GetFavoriteCourses(c *gin.Context) {
 	userId := c.GetInt("userId")
-	courses, err := h.favoriteUsecase.GetFavoriteCourses(userId)
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	page, _ := strconv.Atoi(c.Query("page"))
+	params := entity.NewFavoritesParams(userId, limit, page)
+	courses, totalRows, totalPages, err := h.favoriteUsecase.GetFavoriteCourses(params)
 	if err != nil {
 		response.SendError(c, http.StatusInternalServerError, errResp.ErrCodeInternalServerError, errResp.ErrInternalServerError.Error())
 		return
 	}
 
-	response.SendSuccess(c, http.StatusOK, courses)
+	response.SendSuccessWithPagination(c, http.StatusOK, courses, totalRows, totalPages)
 }
 
 func (h *Handler) SaveUnsaveFavoriteCourse(c *gin.Context) {
