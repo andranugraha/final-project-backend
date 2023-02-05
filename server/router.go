@@ -1,6 +1,7 @@
 package server
 
 import (
+	envConfig "final-project-backend/config"
 	"final-project-backend/handler"
 	"final-project-backend/middleware"
 	"final-project-backend/usecase"
@@ -39,7 +40,7 @@ func NewRouter(cfg *RouterConfig) *gin.Engine {
 	})
 
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowOrigins = envConfig.AllowOrigins
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
 	config.AllowHeaders = []string{"Content-Type", "Authorization"}
 	config.ExposeHeaders = []string{"Content-Length"}
