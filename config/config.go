@@ -35,7 +35,6 @@ func getArrayENV(key string) []string {
 var (
 	ENV      = getENV("APP_ENV", "test")
 	AppName  = "sea-labs-library"
-	Port     = getENV("PORT", "8080")
 	DBConfig = dbConfig{
 		Host:     getENV("DB_HOST", "localhost"),
 		User:     getENV("DB_USER", ""),

@@ -1,10 +1,8 @@
 package server
 
 import (
-	"fmt"
 	"log"
 
-	"final-project-backend/config"
 	"final-project-backend/db"
 	"final-project-backend/repository"
 	"final-project-backend/usecase"
@@ -130,7 +128,7 @@ func createRouter() *gin.Engine {
 
 func Init() {
 	r := createRouter()
-	err := r.Run(fmt.Sprintf(":%s", config.Port))
+	err := r.Run()
 	if err != nil {
 		log.Println("error while running server", err)
 		return
