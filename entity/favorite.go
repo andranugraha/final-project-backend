@@ -36,7 +36,7 @@ func NewFavoritesParams(userId int, limit int, page int) GetFavoritesParams {
 	return GetFavoritesParams{
 		UserId: userId,
 		Limit: func() int {
-			if limit > 10 {
+			if limit > 0 {
 				return limit
 			}
 

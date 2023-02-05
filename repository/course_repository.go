@@ -100,7 +100,7 @@ func (r *courseRepositoryImpl) FindTrending() ([]entity.Course, error) {
 		Joins("left join transactions t ON courses.id = t.course_id and t.created_at >= date_trunc('week', now())").
 		Joins("left join invoices i on t.invoice_id = i.id and i.status = ?", constant.CourseStatusCompleted).
 		Where("courses.status = ?", constant.PublishStatus).
-		Group("courses.id").
+		Group("1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14").
 		Order("count(t.id) DESC").Limit(defaultLimit).Find(&courses).Error
 	if err != nil {
 		return nil, err

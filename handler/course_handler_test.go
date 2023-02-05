@@ -15,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateCourse(t *testing.T) {
@@ -28,7 +29,9 @@ func TestCreateCourse(t *testing.T) {
 			CategoryId: 1,
 			Tags:       []string{"test"},
 			Price:      10000,
-			Image:      multipart.FileHeader{},
+			Image: &multipart.FileHeader{
+				Filename: "test.jpg",
+			},
 		}
 	)
 
@@ -56,7 +59,7 @@ func TestCreateCourse(t *testing.T) {
 			},
 			code: http.StatusOK,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("CreateCourse", defaultReq).Return(&entity.Course{
+				m.On("CreateCourse", mock.Anything).Return(&entity.Course{
 					ID: 1,
 				}, nil)
 			},
@@ -87,7 +90,7 @@ func TestCreateCourse(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("CreateCourse", defaultReq).Return(nil, errors.ErrDuplicateTitle)
+				m.On("CreateCourse", mock.Anything).Return(nil, errors.ErrDuplicateTitle)
 			},
 		},
 		"should return 500 when create course failed": {
@@ -107,7 +110,7 @@ func TestCreateCourse(t *testing.T) {
 			},
 			code: http.StatusInternalServerError,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("CreateCourse", defaultReq).Return(nil, errors.ErrInternalServerError)
+				m.On("CreateCourse", mock.Anything).Return(nil, errors.ErrInternalServerError)
 			},
 		},
 	}
@@ -121,9 +124,12 @@ func TestCreateCourse(t *testing.T) {
 				CourseUsecase: mockUsecase,
 			}
 			payload, writer := testutils.MakeRequestBodyMultiPartFormData(test.courseReq)
+			image, _ := writer.CreateFormFile("image", "test.jpg")
+			image.Write([]byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01})
 
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/admin/courses", payload)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
+			writer.Close()
 			_, rec := testutils.ServeReq(cfg, req)
 
 			assert.Equal(t, test.code, rec.Code)
@@ -329,7 +335,6 @@ func TestUpdateCourse(t *testing.T) {
 			CategoryId: 1,
 			Tags:       []string{"test"},
 			Price:      10000,
-			Image:      nil,
 		}
 	)
 
@@ -357,7 +362,7 @@ func TestUpdateCourse(t *testing.T) {
 			},
 			code: http.StatusOK,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("UpdateCourse", "1", defaultReq).Return(&entity.Course{
+				m.On("UpdateCourse", "1", mock.Anything).Return(&entity.Course{
 					ID: 1,
 				}, nil)
 			},
@@ -388,7 +393,7 @@ func TestUpdateCourse(t *testing.T) {
 			},
 			code: http.StatusNotFound,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("UpdateCourse", "1", defaultReq).Return(nil, errors.ErrCourseNotFound)
+				m.On("UpdateCourse", "1", mock.Anything).Return(nil, errors.ErrCourseNotFound)
 			},
 		},
 		"should return 400 when title used": {
@@ -408,7 +413,7 @@ func TestUpdateCourse(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("UpdateCourse", "1", defaultReq).Return(nil, errors.ErrDuplicateTitle)
+				m.On("UpdateCourse", "1", mock.Anything).Return(nil, errors.ErrDuplicateTitle)
 			},
 		},
 		"should return 500 when update course failed": {
@@ -428,7 +433,7 @@ func TestUpdateCourse(t *testing.T) {
 			},
 			code: http.StatusInternalServerError,
 			beforeTest: func(m *mocks.CourseUsecase) {
-				m.On("UpdateCourse", "1", defaultReq).Return(nil, errors.ErrInternalServerError)
+				m.On("UpdateCourse", "1", mock.Anything).Return(nil, errors.ErrInternalServerError)
 			},
 		},
 	}
@@ -442,9 +447,12 @@ func TestUpdateCourse(t *testing.T) {
 				CourseUsecase: mockUsecase,
 			}
 			payload, writer := testutils.MakeRequestBodyMultiPartFormData(test.courseReq)
+			image, _ := writer.CreateFormFile("image", "test.jpg")
+			image.Write([]byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01})
 
 			req, _ := http.NewRequest(http.MethodPut, "/api/v1/admin/courses/1", payload)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
+			writer.Close()
 			_, rec := testutils.ServeReq(cfg, req)
 
 			assert.Equal(t, test.code, rec.Code)

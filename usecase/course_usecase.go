@@ -106,7 +106,7 @@ func (u *courseUsecaseImpl) GetUserCourse(userId int, slug string) (*entity.User
 
 func (u *courseUsecaseImpl) CreateCourse(req dto.CreateCourseRequest) (*entity.Course, error) {
 	courseSlug := u.generateSlug(req.Title)
-	imgUrl, err := u.storageUtil.Upload(&req.Image, courseSlug)
+	imgUrl, err := u.storageUtil.Upload(req.Image, courseSlug)
 	if err != nil {
 		return nil, err
 	}

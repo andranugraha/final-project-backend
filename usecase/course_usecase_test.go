@@ -324,7 +324,7 @@ func TestCreateCourse(t *testing.T) {
 	var (
 		req = dto.CreateCourseRequest{
 			Title: "title",
-			Image: multipart.FileHeader{},
+			Image: &multipart.FileHeader{},
 		}
 	)
 

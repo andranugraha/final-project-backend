@@ -23,10 +23,10 @@ func getENV(key, defaultVal string) string {
 	return env
 }
 
-func getArrayENV(key string) []string {
+func getArrayENV(key string, defaultValue []string) []string {
 	env := os.Getenv(key)
 	if env == "" {
-		return []string{}
+		return defaultValue
 	}
 
 	return strings.Split(env, ",")
@@ -44,5 +44,5 @@ var (
 	}
 	Secret        = getENV("SECRET", "secret")
 	CloudinaryUrl = getENV("CLOUDINARY_URL", "cloudinary://")
-	AllowOrigins  = getArrayENV("ALLOW_ORIGINS")
+	AllowOrigins  = getArrayENV("ALLOW_ORIGINS", []string{"http://localhost:3000"})
 )

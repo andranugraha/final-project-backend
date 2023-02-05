@@ -29,7 +29,6 @@ func MakeRequestBody(dto interface{}) *strings.Reader {
 func MakeRequestBodyMultiPartFormData(dto map[string]string) (*bytes.Buffer, *multipart.Writer) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	defer writer.Close()
 
 	for key, val := range dto {
 		part, _ := writer.CreateFormField(key)

@@ -7,15 +7,15 @@ import (
 )
 
 type CreateCourseRequest struct {
-	Title      string               `form:"title" binding:"required"`
-	Summary    string               `form:"summary" binding:"required"`
-	Content    string               `form:"content" binding:"required"`
-	AuthorName string               `form:"authorName" binding:"required"`
-	Status     string               `form:"status" binding:"required"`
-	CategoryId int                  `form:"categoryId" binding:"required"`
-	Tags       []string             `form:"tags" binding:"required"`
-	Price      float64              `form:"price" binding:"required"`
-	Image      multipart.FileHeader `form:"image" binding:"required"`
+	Title      string                `form:"title" binding:"required"`
+	Summary    string                `form:"summary" binding:"required"`
+	Content    string                `form:"content" binding:"required"`
+	AuthorName string                `form:"authorName" binding:"required"`
+	Status     string                `form:"status" binding:"required"`
+	CategoryId int                   `form:"categoryId" binding:"required"`
+	Tags       []string              `form:"tags" binding:"required"`
+	Price      float64               `form:"price" binding:"required"`
+	Image      *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 type CreateCourseResponse struct {
