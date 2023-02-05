@@ -1,4 +1,4 @@
-# assignment-golang-backend
+# Final Project Backend
 
 ## Project Description
 
