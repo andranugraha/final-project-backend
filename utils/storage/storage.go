@@ -65,7 +65,7 @@ func (s storageUtilImpl) Upload(image *multipart.FileHeader, fileName string) (*
 func (s storageUtilImpl) Rename(oldName, newName string) (*StoredImage, error) {
 	updatedResult, err := cld.Upload.Rename(ctx, uploader.RenameParams{
 		FromPublicID: "courses/" + oldName,
-		ToPublicID:   newName,
+		ToPublicID:   "courses/" + newName,
 	})
 	if err != nil {
 		return nil, err
