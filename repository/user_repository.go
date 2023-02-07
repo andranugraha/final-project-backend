@@ -140,7 +140,8 @@ func (r *userRepositoryImpl) LevelUp(tx *gorm.DB, id int, totalTransaction int64
 	}
 
 	if user.LevelId != level.ID {
-		err = tx.Model(&user).Update("level_id", level.ID).Error
+		user.LevelId = level.ID
+		err = tx.Save(&user).Error
 		if err != nil {
 			return nil, err
 		}
