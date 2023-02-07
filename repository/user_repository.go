@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"log"
 
 	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
@@ -138,9 +139,11 @@ func (r *userRepositoryImpl) LevelUp(tx *gorm.DB, id int, totalTransaction int64
 	if err != nil {
 		return nil, err
 	}
+	log.Println("level", level)
 
 	if user.LevelId != level.ID {
 		user.LevelId = level.ID
+		log.Println("user", user)
 		err = tx.Save(&user).Error
 		if err != nil {
 			return nil, err
