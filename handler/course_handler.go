@@ -6,7 +6,6 @@ import (
 	"final-project-backend/entity"
 	errResp "final-project-backend/utils/errors"
 	"final-project-backend/utils/response"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,7 +22,6 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 
 	course, err := h.courseUsecase.CreateCourse(req)
 	if err != nil {
-		log.Println(err)
 		if errors.Is(err, errResp.ErrDuplicateTitle) {
 			response.SendError(c, http.StatusBadRequest, errResp.ErrCodeDuplicate, err.Error())
 			return
